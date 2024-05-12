@@ -4,7 +4,7 @@
             <a class="navbar-item" href="/"> Inicio </a>
 
             <div class="navbar-item has-dropdown is-hoverable">
-                <a class="navbar-link" href="#carteles"> Carteles </a>
+                <a class="navbar-link"> Carteles </a>
 
                 <div class="navbar-dropdown">
                     <a class="navbar-item" href="/carteles/copiarMovimiento">
