@@ -6,7 +6,11 @@
 <div class="text-column">
     <h1>Acerca de Asu</h1>
 
-    <p>
+    <div class="kagamin">
+        <img src="img/kagamin.gif" alt="" />
+    </div>
+
+    <p class="mt-2">
         Asu versión web, de <a
             href="https://github.com/FS-Frost"
             target="_blank">[FS] Frost</a
@@ -63,3 +67,14 @@
         </li>
     </ul>
 </div>
+
+<style>
+    .kagamin {
+        display: flex;
+        justify-content: center;
+    }
+
+    .kagamin img {
+        width: 50%;
+    }
+</style>
