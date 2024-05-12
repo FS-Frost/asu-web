@@ -84,6 +84,10 @@
     });
 </script>
 
+<svelte:head>
+    <title>Copiar movimiento</title>
+</svelte:head>
+
 <section>
     <h1 class="title is-5">Copiar movimiento</h1>
 

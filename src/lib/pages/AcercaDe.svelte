@@ -1,6 +1,5 @@
 <svelte:head>
-    <title>About</title>
-    <meta name="description" content="About this app" />
+    <title>Acerca de Asu</title>
 </svelte:head>
 
 <div class="text-column">

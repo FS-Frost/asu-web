@@ -1,13 +1,27 @@
 <script lang="ts">
+    import { activePage, type ActivePage } from "$lib/store";
+    import { onMount } from "svelte";
+    import CopiarMovimiento from "$lib/pages/carteles/CopiarMovimiento.svelte";
+    import AcercaDe from "$lib/pages/AcercaDe.svelte";
+    import Inicio from "$lib/pages/Inicio.svelte";
+
+    let page: ActivePage = "inicio";
+
+    onMount(() => {
+        activePage.subscribe((newActivePage) => {
+            page = newActivePage;
+        });
+    });
 </script>
 
-<svelte:head>
-    <title>Home</title>
-    <meta name="description" content="Svelte demo app" />
-</svelte:head>
-
 <section>
-    <img class="wallpaper" src="img/hyouka.jpg" alt="" />
+    {#if page == "inicio"}
+        <Inicio />
+    {:else if page == "carteles.copiarMovimiento"}
+        <CopiarMovimiento />
+    {:else if page == "acercaDe"}
+        <AcercaDe />
+    {/if}
 </section>
 
 <style>
@@ -17,12 +31,5 @@
         justify-content: center;
         align-items: center;
         flex: 0.6;
-    }
-
-    .wallpaper {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
     }
 </style>
