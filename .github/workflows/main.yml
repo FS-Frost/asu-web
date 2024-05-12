@@ -21,7 +21,7 @@ jobs:
                   npm run build
 
             - name: Change base-tag in index.html from / to asu-web
-              run: sed -i 's/<base href="\/" \/>/<base href="\/asu-web\/" \/>/g' public/index.html
+              run: sed -i 's/<base href="\/" \/>/<base href="\/asu-web\/" \/>/g' build/index.html
 
             - name: Generate build info
               run: |
