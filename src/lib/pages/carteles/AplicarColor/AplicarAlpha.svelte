@@ -10,6 +10,14 @@
     let rawResultLines: string = "";
     let alphaTotalStart: string = "0";
     let alphaTotalEnd: string = "FF";
+    let alpha1Start: string = "0";
+    let alpha1End: string = "FF";
+    let alpha2Start: string = "0";
+    let alpha2End: string = "FF";
+    let alpha3Start: string = "0";
+    let alpha3End: string = "FF";
+    let alpha4Start: string = "0";
+    let alpha4End: string = "FF";
 
     let alphaTotalDisabled: boolean = false;
     let alpha1Disabled: boolean = true;
@@ -62,10 +70,6 @@
     }
 
     function processLines(): void {
-        let startValue = 0;
-        let endValue = 255;
-        let alphaTotalHexValues: string[] = [];
-
         const lines: asu.Line[] = [];
         const rawLines = rawTargetLines.split("\n");
         for (const rawLine of rawLines) {
@@ -80,9 +84,8 @@
         }
 
         if (!alphaTotalDisabled) {
-            startValue = asu.hexToNumber(alphaTotalStart);
-            endValue = asu.hexToNumber(alphaTotalEnd);
-            console.log(startValue, endValue);
+            const startValue = asu.hexToNumber(alphaTotalStart);
+            const endValue = asu.hexToNumber(alphaTotalEnd);
 
             if (startValue >= endValue) {
                 alert("El inicio de alpha total debe ser menor al fin.");
@@ -103,23 +106,22 @@
                 return;
             }
 
-            alphaTotalHexValues = generateHexArray(startValue, endValue);
+            const alphaHexValues = generateHexArray(startValue, endValue);
             if (reverseLinesEnabled) {
-                alphaTotalHexValues.reverse();
+                alphaHexValues.reverse();
             }
 
             let result = "";
-            console.log(alphaTotalHexValues);
             for (let i = 0; i < lines.length; i++) {
                 let alphaIndex = Math.floor(
-                    (alphaTotalHexValues.length * i) / lines.length,
+                    (alphaHexValues.length * i) / lines.length,
                 );
 
-                if (alphaIndex >= alphaTotalHexValues.length) {
-                    alphaIndex = alphaTotalHexValues.length - 1;
+                if (alphaIndex >= alphaHexValues.length) {
+                    alphaIndex = alphaHexValues.length - 1;
                 }
 
-                const alphaValue = alphaTotalHexValues[alphaIndex];
+                const alphaValue = alphaHexValues[alphaIndex];
                 const alphaArg = `&H${alphaValue}&`;
                 const items = asu.parseContent(lines[i].content);
                 asu.setAlpha(items, alphaArg);
@@ -137,54 +139,209 @@
             return;
         }
 
-        // if (chbox_Invertir.IsChecked.Value) {
-        //     lineas.reverse();
-        // }
+        if (!alpha1Disabled) {
+            const startValue = asu.hexToNumber(alpha1Start);
+            const endValue = asu.hexToNumber(alpha1End);
 
-        // Lista con las listas alpha.
-        // var listasAlpha = new List<List<string>> {
-        //     listaAlpha1,
-        //     listaAlpha2,
-        //     listaAlpha3,
-        //     listaAlpha4
-        // };
+            if (startValue >= endValue) {
+                alert("El inicio de alpha 1 debe ser menor al fin.");
+                return;
+            }
 
-        // Lista con formatos alpha.
-        // Cada formato se usará en string.Format(),
-        // de ahí el {0} para colocar el valor automáticamente.
-        // var listaFormatoAlpha = new List<string> {
-        //     @"\1a&H{0}&",
-        //     @"\2a&H{0}&",
-        //     @"\3a&H{0}&",
-        //     @"\4a&H{0}&"
-        // };
+            if (startValue < 0) {
+                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                return;
+            }
 
-        // var listaSelecciones = new List<bool> {
-        //     chbox_Valor1.IsChecked.Value,
-        //     chbox_Valor2.IsChecked.Value,
-        //     chbox_Valor3.IsChecked.Value,
-        //     chbox_Valor4.IsChecked.Value
-        // };
+            if (endValue > 255) {
+                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                return;
+            }
 
-        // if (!chbox_ValorTotal.IsChecked.Value) {
-        //     // Si se usan todos los alpha.
-        //     for (var i = 0; i < listasAlpha.Count; i++) {
-        //         if (listaSelecciones[i]) {
-        //             lineas = AplicarListaAlpha(lineas, listasAlpha[i], listaFormatoAlpha[i]);
-        //         }
-        //     }
-        // } else {
-        // Si se usa solo alpha total.
-        // lineas = AplicarListaAlpha(lineas, listaAlphaTotal, @"\alpha&H{0}&");
-        // }
+            const alphaHexValues = generateHexArray(startValue, endValue);
+            if (reverseLinesEnabled) {
+                alphaHexValues.reverse();
+            }
 
-        // Se invierte el orden de líneas si se habilita la opción.
-        // if (chbox_Invertir.IsChecked.Value) {
-        //     lineas.reverse();
-        // }
+            let result = "";
+            for (let i = 0; i < lines.length; i++) {
+                let alphaIndex = Math.floor(
+                    (alphaHexValues.length * i) / lines.length,
+                );
 
-        // await navigator.clipboard.writeText(result);
-        alert("¡Líneas copiadas al portapapeles!");
+                if (alphaIndex >= alphaHexValues.length) {
+                    alphaIndex = alphaHexValues.length - 1;
+                }
+
+                const alphaValue = alphaHexValues[alphaIndex];
+                const alphaArg = `&H${alphaValue}&`;
+                const items = asu.parseContent(lines[i].content);
+                asu.setAlpha1(items, alphaArg);
+                lines[i].content = asu.contentsToString(items);
+                const rawResult = asu.lineToString(lines[i]);
+
+                if (i > 0) {
+                    result += "\n";
+                }
+
+                result += rawResult;
+            }
+
+            rawResultLines = result;
+        }
+
+        if (!alpha2Disabled) {
+            const startValue = asu.hexToNumber(alpha2Start);
+            const endValue = asu.hexToNumber(alpha2End);
+
+            if (startValue >= endValue) {
+                alert("El inicio de alpha 1 debe ser menor al fin.");
+                return;
+            }
+
+            if (startValue < 0) {
+                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                return;
+            }
+
+            if (endValue > 255) {
+                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                return;
+            }
+
+            const alphaHexValues = generateHexArray(startValue, endValue);
+            if (reverseLinesEnabled) {
+                alphaHexValues.reverse();
+            }
+
+            let result = "";
+            for (let i = 0; i < lines.length; i++) {
+                let alphaIndex = Math.floor(
+                    (alphaHexValues.length * i) / lines.length,
+                );
+
+                if (alphaIndex >= alphaHexValues.length) {
+                    alphaIndex = alphaHexValues.length - 1;
+                }
+
+                const alphaValue = alphaHexValues[alphaIndex];
+                const alphaArg = `&H${alphaValue}&`;
+                const items = asu.parseContent(lines[i].content);
+                asu.setAlpha2(items, alphaArg);
+                lines[i].content = asu.contentsToString(items);
+                const rawResult = asu.lineToString(lines[i]);
+
+                if (i > 0) {
+                    result += "\n";
+                }
+
+                result += rawResult;
+            }
+
+            rawResultLines = result;
+        }
+
+        if (!alpha3Disabled) {
+            const startValue = asu.hexToNumber(alpha3Start);
+            const endValue = asu.hexToNumber(alpha3End);
+
+            if (startValue >= endValue) {
+                alert("El inicio de alpha 1 debe ser menor al fin.");
+                return;
+            }
+
+            if (startValue < 0) {
+                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                return;
+            }
+
+            if (endValue > 255) {
+                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                return;
+            }
+
+            const alphaHexValues = generateHexArray(startValue, endValue);
+            if (reverseLinesEnabled) {
+                alphaHexValues.reverse();
+            }
+
+            let result = "";
+            for (let i = 0; i < lines.length; i++) {
+                let alphaIndex = Math.floor(
+                    (alphaHexValues.length * i) / lines.length,
+                );
+
+                if (alphaIndex >= alphaHexValues.length) {
+                    alphaIndex = alphaHexValues.length - 1;
+                }
+
+                const alphaValue = alphaHexValues[alphaIndex];
+                const alphaArg = `&H${alphaValue}&`;
+                const items = asu.parseContent(lines[i].content);
+                asu.setAlpha3(items, alphaArg);
+                lines[i].content = asu.contentsToString(items);
+                const rawResult = asu.lineToString(lines[i]);
+
+                if (i > 0) {
+                    result += "\n";
+                }
+
+                result += rawResult;
+            }
+
+            rawResultLines = result;
+        }
+
+        if (!alpha4Disabled) {
+            const startValue = asu.hexToNumber(alpha4Start);
+            const endValue = asu.hexToNumber(alpha4End);
+
+            if (startValue >= endValue) {
+                alert("El inicio de alpha 1 debe ser menor al fin.");
+                return;
+            }
+
+            if (startValue < 0) {
+                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                return;
+            }
+
+            if (endValue > 255) {
+                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                return;
+            }
+
+            const alphaHexValues = generateHexArray(startValue, endValue);
+            if (reverseLinesEnabled) {
+                alphaHexValues.reverse();
+            }
+
+            let result = "";
+            for (let i = 0; i < lines.length; i++) {
+                let alphaIndex = Math.floor(
+                    (alphaHexValues.length * i) / lines.length,
+                );
+
+                if (alphaIndex >= alphaHexValues.length) {
+                    alphaIndex = alphaHexValues.length - 1;
+                }
+
+                const alphaValue = alphaHexValues[alphaIndex];
+                const alphaArg = `&H${alphaValue}&`;
+                const items = asu.parseContent(lines[i].content);
+                asu.setAlpha4(items, alphaArg);
+                lines[i].content = asu.contentsToString(items);
+                const rawResult = asu.lineToString(lines[i]);
+
+                if (i > 0) {
+                    result += "\n";
+                }
+
+                result += rawResult;
+            }
+
+            rawResultLines = result;
+        }
     }
 
     async function copyResult(): Promise<void> {
@@ -221,6 +378,8 @@
     <InputBox
         label="Alpha 1"
         bind:this={inputBoxAlpha1}
+        bind:startValue={alpha1Start}
+        bind:endValue={alpha1End}
         bind:disabled={alpha1Disabled}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
@@ -229,6 +388,8 @@
     <InputBox
         label="Alpha 2"
         bind:this={inputBoxAlpha2}
+        bind:startValue={alpha2Start}
+        bind:endValue={alpha2End}
         bind:disabled={alpha2Disabled}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
@@ -237,6 +398,8 @@
     <InputBox
         label="Alpha 3"
         bind:this={inputBoxAlpha3}
+        bind:startValue={alpha3Start}
+        bind:endValue={alpha3End}
         bind:disabled={alpha3Disabled}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
@@ -244,6 +407,8 @@
     <InputBox
         label="Alpha 4"
         bind:this={inputBoxAlpha4}
+        bind:startValue={alpha4Start}
+        bind:endValue={alpha4End}
         bind:disabled={alpha4Disabled}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
