@@ -10,7 +10,7 @@ export type BuildInfo = z.infer<typeof BuildInfo>;
 
 export async function getBuildInfo(): Promise<BuildInfo> {
     const defaultBuildInfo = BuildInfo.parse({});
-    const response = await fetch("/build-info.json");
+    const response = await fetch("build-info.json");
     if (!response.ok) {
         console.error(`failed to fetch build info, status ${response.status}`);
         return defaultBuildInfo;
