@@ -9,11 +9,6 @@
     let page: ActivePage;
 
     onMount(() => {
-        const urlParams = new URLSearchParams(location.search);
-        const rawUrlPage = urlParams.get("page") ?? "";
-        const urlPage: ActivePage = isPage(rawUrlPage) ? rawUrlPage : "inicio";
-        page = urlPage;
-
         activePage.subscribe((newActivePage) => {
             if (newActivePage == null) {
                 return;
@@ -21,6 +16,11 @@
 
             page = newActivePage;
         });
+
+        const urlParams = new URLSearchParams(location.search);
+        const rawUrlPage = urlParams.get("page") ?? "";
+        const urlPage: ActivePage = isPage(rawUrlPage) ? rawUrlPage : "inicio";
+        activePage.set(urlPage);
     });
 </script>
 
