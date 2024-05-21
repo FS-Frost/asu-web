@@ -7,7 +7,7 @@
     let rawTargetLines: string = "";
     let rawResultLines: string = "";
 
-    async function processLines(): Promise<void> {
+    function processLines(): void {
         if (rawTargetLines.length == 0) {
             alert("Pega las líneas desde Aegisub para continuar.");
             return;
@@ -71,16 +71,19 @@
         }
 
         rawResultLines = result;
-        await navigator.clipboard.writeText(result);
+    }
+
+    async function copyResult(): Promise<void> {
+        await navigator.clipboard.writeText(rawResultLines);
         alert("¡Líneas copiadas al portapapeles!");
     }
 
     onMount(() => {
-        rawTargetLines +=
-            "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(182,421)}LINEA 1\n";
-
-        rawTargetLines +=
-            "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(470,361)}LINEA 2";
+        for (let i = 1; i <= 10; i++) {
+            const x = 182 + i * 5;
+            const y = 421 + i * 7;
+            rawTargetLines += `Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(${x},${y})}LINEA ${i}\n`;
+        }
     });
 </script>
 
@@ -119,7 +122,17 @@
     >
 
     <div class="field mt-2">
-        <label class="label" for="">Resultado</label>
+        <label class="label" for="">
+            Resultado
+            <i
+                class="fa-solid fa-copy clickable"
+                role="button"
+                tabindex="0"
+                title="Copiar"
+                on:click={() => copyResult()}
+                on:keydown={() => {}}
+            />
+        </label>
         <div class="control">
             <textarea bind:value={rawResultLines} class="textarea"></textarea>
         </div>
