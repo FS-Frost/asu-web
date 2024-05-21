@@ -5,6 +5,18 @@
     import text from "$lib/text";
 
     let buildInfo: BuildInfo = BuildInfo.parse({});
+    let navMenu: HTMLElement;
+    let navToggle: HTMLElement;
+
+    function toggleMenu(): void {
+        if (navToggle) {
+            navToggle.classList.toggle("is-active");
+        }
+
+        if (navMenu) {
+            navMenu.classList.toggle("is-active");
+        }
+    }
 
     onMount(async () => {
         buildInfo = await getBuildInfo();
@@ -12,7 +24,25 @@
 </script>
 
 <nav class="navbar">
-    <div class="navbar-menu">
+    <a
+        bind:this={navToggle}
+        on:click={() => toggleMenu()}
+        role="button"
+        tabindex="0"
+        class="navbar-burger"
+        data-target="navMenu"
+        aria-label="menu"
+        aria-expanded="false"
+        on:keydown={() => {}}
+        href="#_"
+    >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+    </a>
+
+    <div bind:this={navMenu} class="navbar-menu" id="navMenu">
         <div class="navbar-start">
             <NavItem text="Inicio" page="inicio" />
 
@@ -47,9 +77,3 @@
         </div>
     </div>
 </nav>
-
-<style>
-    .navbar-menu {
-        display: contents;
-    }
-</style>
