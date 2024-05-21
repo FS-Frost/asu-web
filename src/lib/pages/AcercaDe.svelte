@@ -1,9 +1,13 @@
+<script lang="ts">
+    const title: string = "Acerca de Asu";
+</script>
+
 <svelte:head>
-    <title>Acerca de Asu</title>
+    <title>{title}</title>
 </svelte:head>
 
 <div class="text-column">
-    <h1>Acerca de Asu</h1>
+    <h1>{title}</h1>
 
     <div class="kagamin">
         <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />

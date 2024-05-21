@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import * as asu from "$lib/asu/asu.browser";
 
+    const title: string = "Copiar movimiento";
+
     let rawBaseLine: string =
         "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!";
     let rawTargetLines: string = "";
@@ -88,11 +90,11 @@
 </script>
 
 <svelte:head>
-    <title>Copiar movimiento</title>
+    <title>{title}</title>
 </svelte:head>
 
 <section>
-    <h1 class="title is-5">Copiar movimiento</h1>
+    <h1 class="title is-5">{title}</h1>
 
     <div class="field">
         <label class="label" for="">Movimiento base</label>
