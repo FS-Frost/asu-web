@@ -61,7 +61,7 @@
         }
     }
 
-    async function processLines(): Promise<void> {
+    function processLines(): void {
         let startValue = 0;
         let endValue = 255;
         let alphaTotalHexValues: string[] = [];
@@ -82,6 +82,7 @@
         if (!alphaTotalDisabled) {
             startValue = asu.hexToNumber(alphaTotalStart);
             endValue = asu.hexToNumber(alphaTotalEnd);
+            console.log(startValue, endValue);
 
             if (startValue >= endValue) {
                 alert("El inicio de alpha total debe ser menor al fin.");
@@ -133,8 +134,6 @@
             }
 
             rawResultLines = result;
-            await navigator.clipboard.writeText(result);
-            alert(`¡Líneas copiadas al portapapeles: ${lines.length}!`);
             return;
         }
 
@@ -188,12 +187,15 @@
         alert("¡Líneas copiadas al portapapeles!");
     }
 
-    onMount(() => {
-        rawTargetLines +=
-            "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(182,421)}LINEA 1\n";
+    async function copyResult(): Promise<void> {
+        await navigator.clipboard.writeText(rawResultLines);
+        alert("¡Líneas copiadas al portapapeles!");
+    }
 
-        rawTargetLines +=
-            "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(470,361)}LINEA 2";
+    onMount(() => {
+        for (let i = 1; i <= 10; i++) {
+            rawTargetLines += `Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(182,421)}LINEA ${i}\n`;
+        }
     });
 </script>
 
@@ -209,6 +211,8 @@
     <InputBox
         label="Alpha total"
         bind:this={inputBoxAlphaTotal}
+        bind:startValue={alphaTotalStart}
+        bind:endValue={alphaTotalEnd}
         bind:disabled={alphaTotalDisabled}
         on:enabled={() => handleAlphaTotalEnabled()}
         on:disabled={() => handleAlphaTotalDisabled()}
@@ -266,7 +270,17 @@
     </button>
 
     <div class="field mt-2">
-        <label class="label" for="">Resultado</label>
+        <label class="label" for="">
+            Resultado
+            <i
+                class="fa-solid fa-copy clickable"
+                role="button"
+                tabindex="0"
+                title="Copiar"
+                on:click={() => copyResult()}
+                on:keydown={() => {}}
+            />
+        </label>
         <div class="control">
             <textarea bind:value={rawResultLines} class="textarea"></textarea>
         </div>
