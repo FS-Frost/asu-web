@@ -1,5 +1,7 @@
 # asu-web
 
+![main](https://github.com/FS-Frost/asu-web/actions/workflows/main.yml/badge.svg)
+
 Asu versión web, de [[FS] Frost](https://github.com/FS-Frost) para [SyncRajo Fansub](http://syncrajo.net).
 
 Agradecimientos por su ayuda a:
