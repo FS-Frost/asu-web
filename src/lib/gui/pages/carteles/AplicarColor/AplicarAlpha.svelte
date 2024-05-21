@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import * as asu from "$lib/asu/asu.browser";
+    import * as asu from "@fs-frost/asu";
     import InputBox from "./InputBox.svelte";
     import { generateHexArray } from "$lib/carteles";
     import ButtonCopyResult from "$lib/gui/ButtonCopyResult.svelte";

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import * as asu from "$lib/asu/asu.browser";
+    import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
 
     const title: string = text.copiarMovimiento;

@@ -1,4 +1,4 @@
-import * as asu from "./asu/asu.browser";
+import * as asu from "@fs-frost/asu";
 
 export function generateHexArray(min: number, max: number): string[] {
     const hexArray: string[] = [];
