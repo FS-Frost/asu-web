@@ -20,7 +20,7 @@
     <p class="mt-2">Agradecimientos por su ayuda a:</p>
 
     <ul>
-        <li>- [GX] Gonxas: hardcode testing y script para crear AVS.</li>
+        <li>- [GX] Gonxas: hardcore testing y script para crear AVS.</li>
 
         <li>- [Sr] Hell: servicio de host.</li>
 

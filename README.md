@@ -2,11 +2,13 @@
 
 ![main](https://github.com/FS-Frost/asu-web/actions/workflows/main.yml/badge.svg)
 
+https://fs-frost.github.io/asu-web/
+
 Asu versión web, de [[FS] Frost](https://github.com/FS-Frost) para [SyncRajo Fansub](http://syncrajo.net).
 
 Agradecimientos por su ayuda a:
 
-- **[GX] Gonxas**: hardcode testing y script para crear AVS.
+- **[GX] Gonxas**: hardcore testing y script para crear AVS.
 - **[Sr] Hell**: servicio de host.
 - **[EC] DarkAngel**: idea para separar sílabas en karaokes.
 
