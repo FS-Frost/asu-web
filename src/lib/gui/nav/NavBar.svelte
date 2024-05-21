@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import NavItem from "./NavItem.svelte";
     import { BuildInfo, getBuildInfo } from "$lib/buildInfo";
+    import text from "$lib/text";
 
     let buildInfo: BuildInfo = BuildInfo.parse({});
 
@@ -20,18 +21,18 @@
 
                 <div class="navbar-dropdown">
                     <NavItem
-                        text="Aplicar alpha"
+                        text={text.aplicarAlpha}
                         page="carteles.aplicarAlpha"
                     />
 
                     <NavItem
-                        text="Copiar movimiento"
+                        text={text.copiarMovimiento}
                         page="carteles.copiarMovimiento"
                     />
                 </div>
             </div>
 
-            <NavItem text="Acerca de" page="acercaDe" />
+            <NavItem text={text.acercaDe} page="acercaDe" />
         </div>
 
         <div class="navbar-end">

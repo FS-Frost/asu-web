@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import * as asu from "$lib/asu/asu.browser";
+    import text from "$lib/text";
 
-    const title: string = "Copiar movimiento";
+    const title: string = text.copiarMovimiento;
 
     let rawBaseLine: string =
         "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!";
@@ -109,7 +110,10 @@
     </div>
 
     <div class="field">
-        <label class="label" for="">Subtítulos</label>
+        <label class="label" for="">
+            {text.subtitulos}
+        </label>
+
         <div class="control">
             <textarea
                 bind:value={rawTargetLines}
@@ -119,13 +123,13 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}
-        >Copiar movimiento</button
-    >
+    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+        {text.copiarMovimiento}
+    </button>
 
     <div class="field mt-2">
         <label class="label" for="">
-            Resultado
+            {text.resultado}
             <i
                 class="fa-solid fa-copy clickable"
                 role="button"

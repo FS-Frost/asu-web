@@ -1,5 +1,7 @@
 <script lang="ts">
-    const title: string = "Acerca de Asu";
+    import text from "$lib/text";
+
+    const title: string = text.acercaDe;
 </script>
 
 <svelte:head>

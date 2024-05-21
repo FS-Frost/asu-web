@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { activePage, type ActivePage } from "$lib/store";
+    import { activePage, type ActivePage } from "$lib/activePage";
 
     export let text: string;
     export let page: ActivePage;

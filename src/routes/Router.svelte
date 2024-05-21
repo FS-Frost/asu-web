@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { activePage, type ActivePage, isPage } from "$lib/store";
+    import { activePage, type ActivePage, isPage } from "$lib/activePage";
     import { onMount } from "svelte";
-    import CopiarMovimiento from "$lib/pages/carteles/CopiarMovimiento.svelte";
-    import AcercaDe from "$lib/pages/AcercaDe.svelte";
-    import Inicio from "$lib/pages/Inicio.svelte";
-    import AplicarAlpha from "$lib/pages/carteles/AplicarColor/AplicarAlpha.svelte";
+    import CopiarMovimiento from "$lib/gui/pages/carteles/CopiarMovimiento.svelte";
+    import AcercaDe from "$lib/gui/pages/AcercaDe.svelte";
+    import Inicio from "$lib/gui/pages/Inicio.svelte";
+    import AplicarAlpha from "$lib/gui/pages/carteles/AplicarColor/AplicarAlpha.svelte";
 
     let page: ActivePage;
 

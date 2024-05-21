@@ -3,8 +3,10 @@
     import * as asu from "$lib/asu/asu.browser";
     import InputBox from "./InputBox.svelte";
     import { generateHexArray } from "$lib/carteles";
+    import ButtonCopyResult from "$lib/gui/ButtonCopyResult.svelte";
+    import text from "$lib/text";
 
-    const title: string = "Aplicar alpha";
+    const title: string = text.aplicarAlpha;
 
     let rawTargetLines: string = "";
     let rawResultLines: string = "";
@@ -344,11 +346,6 @@
         }
     }
 
-    async function copyResult(): Promise<void> {
-        await navigator.clipboard.writeText(rawResultLines);
-        alert("¡Líneas copiadas al portapapeles!");
-    }
-
     onMount(() => {
         for (let i = 1; i <= 10; i++) {
             rawTargetLines += `Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(182,421)}LINEA ${i}\n`;
@@ -420,7 +417,10 @@
     </label>
 
     <div class="field">
-        <label class="label" for="">Subtítulos</label>
+        <label class="label" for="">
+            {text.subtitulos}
+        </label>
+
         <div class="control">
             <textarea
                 bind:value={rawTargetLines}
@@ -431,20 +431,13 @@
     </div>
 
     <button class="button is-link is-fullwidth" on:click={() => processLines()}>
-        Aplicar alpha
+        {text.aplicarAlpha}
     </button>
 
     <div class="field mt-2">
         <label class="label" for="">
-            Resultado
-            <i
-                class="fa-solid fa-copy clickable"
-                role="button"
-                tabindex="0"
-                title="Copiar"
-                on:click={() => copyResult()}
-                on:keydown={() => {}}
-            />
+            {text.resultado}
+            <ButtonCopyResult {rawResultLines} />
         </label>
         <div class="control">
             <textarea bind:value={rawResultLines} class="textarea"></textarea>
