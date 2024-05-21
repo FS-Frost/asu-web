@@ -6,7 +6,7 @@
     <h1>Acerca de Asu</h1>
 
     <div class="kagamin">
-        <img src="img/kagamin.gif" alt="" />
+        <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />
     </div>
 
     <p class="mt-2">

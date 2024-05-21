@@ -2,7 +2,7 @@
     <title>Asu</title>
 </svelte:head>
 
-<img class="wallpaper" src="img/hyouka.jpg" alt="" />
+<img class="wallpaper" src="img/hyouka.jpg" alt="Hyouka" title="Hyouka" />
 
 <style>
     .wallpaper {
