@@ -195,17 +195,17 @@
             const endValue = asu.hexToNumber(alpha2End);
 
             if (startValue >= endValue) {
-                alert("El inicio de alpha 1 debe ser menor al fin.");
+                alert("El inicio de alpha 2 debe ser menor al fin.");
                 return;
             }
 
             if (startValue < 0) {
-                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                alert("El inicio de alpha 2 debe ser mayor o igual a 00 (0).");
                 return;
             }
 
             if (endValue > 255) {
-                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                alert("El fin de alpha 2 debe ser menor o igual a FF (255).");
                 return;
             }
 
@@ -246,17 +246,17 @@
             const endValue = asu.hexToNumber(alpha3End);
 
             if (startValue >= endValue) {
-                alert("El inicio de alpha 1 debe ser menor al fin.");
+                alert("El inicio de alpha 3 debe ser menor al fin.");
                 return;
             }
 
             if (startValue < 0) {
-                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                alert("El inicio de alpha 3 debe ser mayor o igual a 00 (0).");
                 return;
             }
 
             if (endValue > 255) {
-                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                alert("El fin de alpha 3 debe ser menor o igual a FF (255).");
                 return;
             }
 
@@ -297,17 +297,17 @@
             const endValue = asu.hexToNumber(alpha4End);
 
             if (startValue >= endValue) {
-                alert("El inicio de alpha 1 debe ser menor al fin.");
+                alert("El inicio de alpha 4 debe ser menor al fin.");
                 return;
             }
 
             if (startValue < 0) {
-                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
+                alert("El inicio de alpha 4 debe ser mayor o igual a 00 (0).");
                 return;
             }
 
             if (endValue > 255) {
-                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
+                alert("El fin de alpha 4 debe ser menor o igual a FF (255).");
                 return;
             }
 
