@@ -7,6 +7,8 @@
     import text from "$lib/text";
 
     const title: string = text.aplicarAlpha;
+    const startPlaceholder: string = "0";
+    const endPlaceholder: string = "FF";
 
     let rawTargetLines: string = "";
     let rawResultLines: string = "";
@@ -360,7 +362,7 @@
 <section>
     <h1 class="title is-5">{title}</h1>
 
-    <label class="label" for="">Configuración Alpha</label>
+    <label class="label" for="">Configuración alpha</label>
 
     <InputBox
         label="Alpha total"
@@ -368,6 +370,8 @@
         bind:startValue={alphaTotalStart}
         bind:endValue={alphaTotalEnd}
         bind:disabled={alphaTotalDisabled}
+        {startPlaceholder}
+        {endPlaceholder}
         on:enabled={() => handleAlphaTotalEnabled()}
         on:disabled={() => handleAlphaTotalDisabled()}
     />
@@ -388,6 +392,8 @@
         bind:startValue={alpha2Start}
         bind:endValue={alpha2End}
         bind:disabled={alpha2Disabled}
+        {startPlaceholder}
+        {endPlaceholder}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
     />
@@ -398,15 +404,20 @@
         bind:startValue={alpha3Start}
         bind:endValue={alpha3End}
         bind:disabled={alpha3Disabled}
+        {startPlaceholder}
+        {endPlaceholder}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
     />
+
     <InputBox
         label="Alpha 4"
         bind:this={inputBoxAlpha4}
         bind:startValue={alpha4Start}
         bind:endValue={alpha4End}
         bind:disabled={alpha4Disabled}
+        {startPlaceholder}
+        {endPlaceholder}
         on:enabled={() => handleAlphaChannelEnabled()}
         on:disabled={() => handleAlphaChannelDisabled()}
     />

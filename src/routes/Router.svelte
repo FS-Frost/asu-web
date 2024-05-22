@@ -5,6 +5,7 @@
     import AcercaDe from "$lib/gui/pages/AcercaDe.svelte";
     import Inicio from "$lib/gui/pages/Inicio.svelte";
     import AplicarAlpha from "$lib/gui/pages/carteles/AplicarColor/AplicarAlpha.svelte";
+    import AplicarColor from "$lib/gui/pages/carteles/AplicarColor/AplicarColor.svelte";
 
     let page: ActivePage;
 
@@ -30,6 +31,8 @@
     <CopiarMovimiento />
 {:else if page == "carteles.aplicarAlpha"}
     <AplicarAlpha />
+{:else if page == "carteles.aplicarColor"}
+    <AplicarColor />
 {:else if page == "acercaDe"}
     <AcercaDe />
 {/if}

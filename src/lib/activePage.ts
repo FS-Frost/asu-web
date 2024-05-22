@@ -1,8 +1,14 @@
 import { writable } from 'svelte/store';
 
-export const pages: string[] = ["inicio", "acercaDe", "carteles.copiarMovimiento", "carteles.aplicarAlpha"];
+const pagesKeys = <const>[
+    "inicio",
+    "acercaDe",
+    "carteles.copiarMovimiento",
+    "carteles.aplicarAlpha",
+    "carteles.aplicarColor",
+];
 
-const pagesKeys = <const>["inicio", "acercaDe", "carteles.copiarMovimiento", "carteles.aplicarAlpha"];
+export const pages: string[] = pagesKeys.map(page => page.toString());
 
 export type ActivePage = typeof pagesKeys[number];
 

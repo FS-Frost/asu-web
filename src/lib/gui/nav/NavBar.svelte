@@ -34,7 +34,7 @@
         aria-label="menu"
         aria-expanded="false"
         on:keydown={() => {}}
-        href="#_"
+        href={`javascript:;`}
     >
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -53,6 +53,11 @@
                     <NavItem
                         text={text.aplicarAlpha}
                         page="carteles.aplicarAlpha"
+                    />
+
+                    <NavItem
+                        text={text.aplicarColor}
+                        page="carteles.aplicarColor"
                     />
 
                     <NavItem

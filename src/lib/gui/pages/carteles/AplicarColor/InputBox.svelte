@@ -5,6 +5,8 @@
     export let disabled: boolean = false;
     export let startValue: string = "";
     export let endValue: string = "";
+    export let startPlaceholder: string = "";
+    export let endPlaceholder: string = "";
 
     let checkbox: HTMLInputElement;
 
@@ -69,7 +71,7 @@
                     bind:value={startValue}
                     class="input"
                     type="text"
-                    placeholder="0"
+                    placeholder={startPlaceholder}
                     {disabled}
                 />
             </div>
@@ -82,7 +84,7 @@
                     bind:value={endValue}
                     class="input"
                     type="text"
-                    placeholder="FF"
+                    placeholder={endPlaceholder}
                     {disabled}
                 />
             </div>
