@@ -41,33 +41,6 @@
             }
         }
 
-        const firstLineDeltaXY: [number, number] = [0, 0];
-        const deltasXY: [number, number][] = [firstLineDeltaXY];
-        for (let i = 0; i < baseLines.length - 1; i++) {
-            const line1 = baseLines[i];
-            const line2 = baseLines[i + 1];
-
-            const itemsLine1 = asu.parseContent(line1.content);
-            const tagPos1 = asu.findPos(itemsLine1);
-            if (tagPos1 == null) {
-                alert(`Línea base sin \\pos: '${asu.lineToString(line1)}'`);
-                console.log(line1);
-                return;
-            }
-
-            const itemsLine2 = asu.parseContent(line2.content);
-            const tagPos2 = asu.findPos(itemsLine2);
-            if (tagPos2 == null) {
-                alert(`Línea base sin \\pos: '${asu.lineToString(line2)}'`);
-                console.log(line2);
-                return;
-            }
-
-            const deltaX = tagPos2.x - tagPos1.x;
-            const deltaY = tagPos2.y - tagPos1.y;
-            deltasXY.push([deltaX, deltaY]);
-        }
-
         const targetLines: asu.Line[] = [];
         {
             const rawLines = rawTargetLines.split("\n");
@@ -108,6 +81,13 @@
             let refPosX = targetTagPos.x;
             let refPosY = targetTagPos.y;
 
+            if (reverseLinesEnabled) {
+                baseLines.reverse();
+            }
+
+            const deltasXY = calculateDeltasXY(baseLines);
+
+            const finalLines: asu.Line[] = [];
             for (let u = 0; u < baseLines.length; u++) {
                 const deltaX = deltasXY[u][0];
                 const deltaY = deltasXY[u][1];
@@ -122,15 +102,51 @@
                 targetLine.start = baseLine.start;
                 targetLine.end = baseLine.end;
 
-                if (u > 0) {
-                    result += "\n";
-                }
+                finalLines.push(structuredClone(targetLine));
+            }
 
-                result += asu.lineToString(targetLine);
+            if (reverseLinesEnabled) {
+                baseLines.reverse();
+                finalLines.reverse();
+            }
+
+            for (const finalLine of finalLines) {
+                result += asu.lineToString(finalLine) + "\n";
             }
         }
 
         rawResultLines = result;
+    }
+
+    function calculateDeltasXY(baseLines: asu.Line[]): [number, number][] {
+        const firstLineDeltaXY: [number, number] = [0, 0];
+        const deltasXY: [number, number][] = [firstLineDeltaXY];
+        for (let i = 0; i < baseLines.length - 1; i++) {
+            const line1 = baseLines[i];
+            const line2 = baseLines[i + 1];
+
+            const itemsLine1 = asu.parseContent(line1.content);
+            const tagPos1 = asu.findPos(itemsLine1);
+            if (tagPos1 == null) {
+                alert(`Línea base sin \\pos: '${asu.lineToString(line1)}'`);
+                console.log(line1);
+                return [];
+            }
+
+            const itemsLine2 = asu.parseContent(line2.content);
+            const tagPos2 = asu.findPos(itemsLine2);
+            if (tagPos2 == null) {
+                alert(`Línea base sin \\pos: '${asu.lineToString(line2)}'`);
+                console.log(line2);
+                return [];
+            }
+
+            const deltaX = tagPos2.x - tagPos1.x;
+            const deltaY = tagPos2.y - tagPos1.y;
+            deltasXY.push([deltaX, deltaY]);
+        }
+
+        return deltasXY;
     }
 
     async function copyResult(): Promise<void> {
@@ -139,28 +155,44 @@
     }
 
     onMount(() => {
-        rawBaseLines += `Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.6,49.8)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.6,593.8)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.08,0:23:58.12,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.55,45.69)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.08,0:23:58.12,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.55,589.69)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.12,0:23:58.16,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.56,41.4)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.12,0:23:58.16,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.56,585.4)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.16,0:23:58.20,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.41,37.09)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.16,0:23:58.20,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.41,581.09)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.20,0:23:58.24,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.31,32.78)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.20,0:23:58.24,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.31,576.78)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.24,0:23:58.29,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.22,28.39)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.24,0:23:58.29,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.22,572.39)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.29,0:23:58.33,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.06,24.18)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.29,0:23:58.33,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.06,568.18)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.33,0:23:58.37,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(635.13,19.34)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.33,0:23:58.37,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.13,563.34)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.37,0:23:58.41,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(634.99,14.77)\\frx4\\fry354}Tama:\n`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.37,0:23:58.41,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.99,558.77)}Tama:\n";
 
-        rawBaseLines += `Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\pos(634.96,10.13)\\frx4\\fry354}Tama:`;
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.96,554.13)}Tama:";
 
+        // Probar en dummy video de 1920x1080
+        // Para probar secuencia normal
         rawTargetLines =
-            "Dialogue: 0,0:00:00.00,0:00:00.02,Default,,0,0,0,,{\\fs42\\bord3\\shad0\\pos(328,472.286)}TEXTO";
+            "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(1039.6,593.8)}LINEA";
+
+        // Para probar secuencia inversa
+        // rawTargetLines =
+        //     "Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(982.96,554.13)}REVERSE";
     });
 </script>
 
