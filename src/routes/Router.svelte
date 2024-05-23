@@ -6,6 +6,7 @@
     import Inicio from "$lib/gui/pages/Inicio.svelte";
     import AplicarAlpha from "$lib/gui/pages/carteles/AplicarColor/AplicarAlpha.svelte";
     import AplicarColor from "$lib/gui/pages/carteles/AplicarColor/AplicarColor.svelte";
+    import AplicarSecuenciaPosiciones from "$lib/gui/pages/carteles/AplicarSecuenciaPosiciones.svelte";
 
     let page: ActivePage;
 
@@ -29,6 +30,8 @@
     <Inicio />
 {:else if page == "carteles.copiarMovimiento"}
     <CopiarMovimiento />
+{:else if page == "carteles.aplicarSecuenciaPosiciones"}
+    <AplicarSecuenciaPosiciones />
 {:else if page == "carteles.aplicarAlpha"}
     <AplicarAlpha />
 {:else if page == "carteles.aplicarColor"}

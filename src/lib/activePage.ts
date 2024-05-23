@@ -4,6 +4,7 @@ const pagesKeys = <const>[
     "inicio",
     "acercaDe",
     "carteles.copiarMovimiento",
+    "carteles.aplicarSecuenciaPosiciones",
     "carteles.aplicarAlpha",
     "carteles.aplicarColor",
 ];

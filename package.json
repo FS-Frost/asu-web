@@ -24,7 +24,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@fs-frost/asu": "npm:@jsr/fs-frost__asu@^0.0.7",
+    "@fs-frost/asu": "npm:@jsr/fs-frost__asu@^0.0.8",
     "zod": "^3.23.8"
   }
 }

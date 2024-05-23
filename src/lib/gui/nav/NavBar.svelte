@@ -61,6 +61,11 @@
                     />
 
                     <NavItem
+                        text={text.aplicarSecuenciaPosiciones}
+                        page="carteles.aplicarSecuenciaPosiciones"
+                    />
+
+                    <NavItem
                         text={text.copiarMovimiento}
                         page="carteles.copiarMovimiento"
                     />
