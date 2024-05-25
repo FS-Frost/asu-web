@@ -7,6 +7,7 @@ const pagesKeys = <const>[
     "carteles.aplicarSecuenciaPosiciones",
     "carteles.aplicarAlpha",
     "carteles.aplicarColor",
+    "karaokes.dividirSilabas",
 ];
 
 export const pages: string[] = pagesKeys.map(page => page.toString());

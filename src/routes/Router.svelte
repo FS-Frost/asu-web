@@ -7,6 +7,7 @@
     import AplicarAlpha from "$lib/gui/pages/carteles/AplicarColor/AplicarAlpha.svelte";
     import AplicarColor from "$lib/gui/pages/carteles/AplicarColor/AplicarColor.svelte";
     import AplicarSecuenciaPosiciones from "$lib/gui/pages/carteles/AplicarSecuenciaPosiciones.svelte";
+    import DividirSilabas from "$lib/gui/pages/karaokes/DividirSilabas.svelte";
 
     let page: ActivePage;
 
@@ -20,7 +21,7 @@
         });
 
         const urlParams = new URLSearchParams(location.search);
-        const rawUrlPage = urlParams.get("page") ?? "";
+        const rawUrlPage = urlParams.get("pagina") ?? "";
         const urlPage: ActivePage = isPage(rawUrlPage) ? rawUrlPage : "inicio";
         activePage.set(urlPage);
     });
@@ -36,6 +37,8 @@
     <AplicarAlpha />
 {:else if page == "carteles.aplicarColor"}
     <AplicarColor />
+{:else if page == "karaokes.dividirSilabas"}
+    <DividirSilabas />
 {:else if page == "acercaDe"}
     <AcercaDe />
 {/if}

@@ -7,7 +7,7 @@
     let isActive: boolean = false;
 
     function generateLink(page: ActivePage): string {
-        return `?page=${page}`;
+        return `?pagina=${page}`;
     }
 
     onMount(() => {
