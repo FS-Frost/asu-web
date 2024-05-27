@@ -8,6 +8,7 @@
     import AplicarColor from "$lib/gui/pages/carteles/AplicarColor/AplicarColor.svelte";
     import AplicarSecuenciaPosiciones from "$lib/gui/pages/carteles/AplicarSecuenciaPosiciones.svelte";
     import DividirSilabas from "$lib/gui/pages/karaokes/DividirSilabas.svelte";
+    import DividirKaraoke from "$lib/gui/pages/karaokes/DividirKaraoke.svelte";
 
     let page: ActivePage;
 
@@ -37,6 +38,8 @@
     <AplicarAlpha />
 {:else if page == "carteles.aplicarColor"}
     <AplicarColor />
+{:else if page == "karaokes.dividirKaraoke"}
+    <DividirKaraoke />
 {:else if page == "karaokes.dividirSilabas"}
     <DividirSilabas />
 {:else if page == "acercaDe"}

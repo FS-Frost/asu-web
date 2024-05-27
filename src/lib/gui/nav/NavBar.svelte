@@ -77,6 +77,11 @@
 
                 <div class="navbar-dropdown">
                     <NavItem
+                        text={text.dividirKaraoke}
+                        page="karaokes.dividirKaraoke"
+                    />
+
+                    <NavItem
                         text={text.dividirSilabas}
                         page="karaokes.dividirSilabas"
                     />
