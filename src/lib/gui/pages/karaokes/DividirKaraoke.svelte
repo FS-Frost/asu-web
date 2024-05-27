@@ -27,8 +27,9 @@
         }
 
         const items = asu.parseContent(line.content);
+        asu.mergeNeighboringEffects(items);
         const indexStart = 0;
-        const indexEnd = syls[splitSylIndex].index + 2;
+        let indexEnd = syls[splitSylIndex].index + 1;
 
         let centisecondsFirstLine = 0;
         for (let i = 0; i <= splitSylIndex; i++) {
@@ -37,7 +38,6 @@
                 continue;
             }
 
-            console.log(syl.text, syl.centiseconds);
             centisecondsFirstLine += syl.centiseconds;
         }
 
@@ -45,16 +45,54 @@
         const originalEndInSeconds = asu.timeToSeconds(line.end);
 
         const itemsLine1 = items.slice(indexStart, indexEnd);
-        console.log(itemsLine1);
         line.content = asu.contentsToString(itemsLine1);
 
         const secondsLine1 = centisecondsFirstLine / 100;
         line.end = asu.secondsToTime(originalStartInSeconds + secondsLine1);
         rawResultLines = asu.lineToString(line);
 
+        let startLine2NeedsUpdate = true;
+        let startLine2SkipCount = 0;
+        while (startLine2NeedsUpdate) {
+            const firstItemLine2 = items[indexEnd + 1];
+            if (firstItemLine2?.name != "text") {
+                startLine2NeedsUpdate = false;
+                break;
+            }
+
+            startLine2NeedsUpdate =
+                firstItemLine2.value.replaceAll(" ", "").length === 0;
+
+            if (startLine2NeedsUpdate) {
+                indexEnd += 2;
+                startLine2SkipCount++;
+            }
+
+            if (startLine2SkipCount > syls.length) {
+                break;
+            }
+        }
+
+        let centisecondsSecondLine = 0;
+        for (
+            let i = splitSylIndex + 1 + startLine2SkipCount;
+            i < syls.length;
+            i++
+        ) {
+            const syl = syls[i];
+            if (syl.centiseconds == null) {
+                continue;
+            }
+
+            centisecondsSecondLine += syl.centiseconds;
+        }
+
         const itemsLine2 = items.slice(indexEnd);
-        line.start = line.end;
         line.end = asu.secondsToTime(originalEndInSeconds);
+        line.start = asu.secondsToTime(
+            originalEndInSeconds - centisecondsSecondLine / 100,
+        );
+
         line.content = asu.contentsToString(itemsLine2);
         rawResultLines += "\n" + asu.lineToString(line);
 
@@ -70,7 +108,7 @@
     }
 
     function parseKaraoke(): Syl[] {
-        const syls: Syl[] = [];
+        syls = [];
         const line = asu.parseLine(rawKaraoke);
         if (line == null) {
             return [];
@@ -84,14 +122,9 @@
                 continue;
             }
 
-            const text = item.value.replaceAll(" ", "");
-            // if (text.length === 0) {
-            //     continue;
-            // }
-
             syls.push({
                 index: i,
-                text: text,
+                text: item.value.replaceAll(" ", ""),
                 centiseconds: null,
             });
 
@@ -131,13 +164,12 @@
             continue;
         }
 
-        console.table(syls);
         splitSylIndex = Math.floor(syls.length / 2);
         return syls;
     }
 
     onMount(() => {
-        syls = parseKaraoke();
+        parseKaraoke();
         processLines();
     });
 </script>
@@ -161,21 +193,28 @@
         </div>
     </div>
 
+    <button class="button is-link is-fullwidth" on:click={() => parseKaraoke()}>
+        Actualizar karaoke
+    </button>
+
     <div class="mb-2">
-        <label class="label" for=""> Sílaba divisoria: </label>
+        <label class="label" for=""> Sílaba divisoria </label>
         <div class="buttons">
             {#each syls as syl, index}
-                <button
-                    class="button {index === splitSylIndex ? 'is-link' : ''}"
-                    value={index}
-                    title={`${syl.centiseconds} centésimas`}
-                    on:click={() => {
-                        splitSylIndex = index;
-                        processLines();
-                    }}
-                >
-                    {syl.text}
-                </button>
+                {#if syl.text.replaceAll(" ", "").length > 0}
+                    <button
+                        class="button {index === splitSylIndex
+                            ? 'is-link'
+                            : ''}"
+                        title={`${syl.text}: ${syl.centiseconds} centésimas`}
+                        on:click={() => {
+                            splitSylIndex = index;
+                            processLines();
+                        }}
+                    >
+                        {syl.text}
+                    </button>
+                {/if}
             {/each}
         </div>
     </div>
@@ -183,8 +222,8 @@
     <div class="field">
         <label class="label" for="">Vista previa</label>
 
-        {#each previews as preview}
-            <p class="preview">{preview}</p>
+        {#each previews as preview, i}
+            <p class="preview">Línea {i + 1}: <b>{preview}</b></p>
         {/each}
     </div>
 
