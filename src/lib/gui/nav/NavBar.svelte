@@ -95,10 +95,10 @@
             <a
                 class="navbar-item"
                 title="Ver en GitHub"
-                href={`https://github.com/FS-Frost/asu-web/commit/${buildInfo.sha}`}
+                href={`https://github.com/FS-Frost/asu-web`}
                 target="_blank"
             >
-                Versión {`${buildInfo.ref}.${buildInfo.sha.substring(0, 7)}`}
+                Ver en GitHub
             </a>
         </div>
     </div>
