@@ -28,7 +28,7 @@
 
         const items = asu.parseContent(line.content);
         const indexStart = 0;
-        const indexEnd = syls[splitSylIndex].index + 1;
+        const indexEnd = syls[splitSylIndex].index + 2;
 
         let centisecondsFirstLine = 0;
         for (let i = 0; i <= splitSylIndex; i++) {
@@ -45,6 +45,7 @@
         const originalEndInSeconds = asu.timeToSeconds(line.end);
 
         const itemsLine1 = items.slice(indexStart, indexEnd);
+        console.log(itemsLine1);
         line.content = asu.contentsToString(itemsLine1);
 
         const secondsLine1 = centisecondsFirstLine / 100;
@@ -76,6 +77,7 @@
         }
 
         const items = asu.parseContent(line.content);
+        asu.mergeNeighboringEffects(items);
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             if (item.name != "text") {
