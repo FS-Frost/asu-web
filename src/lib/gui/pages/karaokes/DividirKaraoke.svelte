@@ -237,7 +237,7 @@
                 title="Copiar"
                 on:click={() => copyResult()}
                 on:keydown={() => {}}
-            />
+            ></i>
         </label>
         <div class="control">
             <textarea bind:value={rawResultLines} class="textarea"></textarea>

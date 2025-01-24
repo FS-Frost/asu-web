@@ -15,4 +15,4 @@
     title={text.copiar}
     on:click={() => copyResult()}
     on:keydown={() => {}}
-/>
+></i>
