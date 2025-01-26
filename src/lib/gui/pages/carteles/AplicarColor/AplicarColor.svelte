@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import * as asu from "@fs-frost/asu";
     import InputBox from "./InputBox.svelte";
-    import { generateHexArray, interpolateColors } from "$lib/carteles";
+    import { interpolateColors } from "$lib/carteles";
     import ButtonCopyResult from "$lib/gui/ButtonCopyResult.svelte";
     import text from "$lib/text";
 
@@ -10,38 +10,38 @@
     const startPlaceholder: string = "&HFFFFFF&";
     const endPlaceholder: string = "&H000000&";
 
-    let rawTargetLines: string = "";
-    let rawResultLines: string = "";
-    let colorTotalStart: string = startPlaceholder;
-    let colorTotalEnd: string = endPlaceholder;
-    let color1Start: string = startPlaceholder;
-    let color1End: string = endPlaceholder;
-    let color2Start: string = startPlaceholder;
-    let color2End: string = endPlaceholder;
-    let color3Start: string = startPlaceholder;
-    let color3End: string = endPlaceholder;
-    let color4Start: string = startPlaceholder;
-    let color4End: string = endPlaceholder;
+    let rawTargetLines = $state<string>("");
+    let rawResultLines = $state<string>("");
+    let colorTotalStart = $state<string>(startPlaceholder);
+    let colorTotalEnd = $state<string>(endPlaceholder);
+    let color1Start = $state<string>(startPlaceholder);
+    let color1End = $state<string>(endPlaceholder);
+    let color2Start = $state<string>(startPlaceholder);
+    let color2End = $state<string>(endPlaceholder);
+    let color3Start = $state<string>(startPlaceholder);
+    let color3End = $state<string>(endPlaceholder);
+    let color4Start = $state<string>(startPlaceholder);
+    let color4End = $state<string>(endPlaceholder);
 
-    let colorTotalDisabled: boolean = false;
-    let color1Disabled: boolean = true;
-    let color2Disabled: boolean = true;
-    let color3Disabled: boolean = true;
-    let color4Disabled: boolean = true;
+    let colorTotalDisabled = $state<boolean>(false);
+    let color1Disabled = $state<boolean>(true);
+    let color2Disabled = $state<boolean>(true);
+    let color3Disabled = $state<boolean>(true);
+    let color4Disabled = $state<boolean>(true);
 
-    let inputBoxColorTotal: InputBox;
-    let inputBoxColor1: InputBox;
-    let inputBoxColor2: InputBox;
-    let inputBoxColor3: InputBox;
-    let inputBoxColor4: InputBox;
+    let inputBoxColorTotal = $state<InputBox>();
+    let inputBoxColor1 = $state<InputBox>();
+    let inputBoxColor2 = $state<InputBox>();
+    let inputBoxColor3 = $state<InputBox>();
+    let inputBoxColor4 = $state<InputBox>();
 
-    let reverseLinesEnabled: boolean = false;
+    let reverseLinesEnabled = $state<boolean>(false);
 
     function handleColorTotalEnabled(): void {
-        inputBoxColor1.disable();
-        inputBoxColor2.disable();
-        inputBoxColor3.disable();
-        inputBoxColor4.disable();
+        inputBoxColor1?.disable();
+        inputBoxColor2?.disable();
+        inputBoxColor3?.disable();
+        inputBoxColor4?.disable();
     }
 
     function handleColorTotalDisabled(): void {
@@ -51,15 +51,15 @@
             color3Disabled &&
             color4Disabled
         ) {
-            inputBoxColor1.enable();
-            inputBoxColor2.disable();
-            inputBoxColor3.disable();
-            inputBoxColor4.disable();
+            inputBoxColor1?.enable();
+            inputBoxColor2?.disable();
+            inputBoxColor3?.disable();
+            inputBoxColor4?.disable();
         }
     }
 
     function handleColorChannelEnabled(): void {
-        inputBoxColorTotal.disable();
+        inputBoxColorTotal?.disable();
     }
 
     function handleColorChannelDisabled(): void {
@@ -69,7 +69,7 @@
             color3Disabled &&
             color4Disabled
         ) {
-            inputBoxColorTotal.enable();
+            inputBoxColorTotal?.enable();
         }
     }
 
@@ -324,8 +324,8 @@
         bind:disabled={colorTotalDisabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleColorTotalEnabled()}
-        on:disabled={() => handleColorTotalDisabled()}
+        onEnabled={() => handleColorTotalEnabled()}
+        onDisabled={() => handleColorTotalDisabled()}
     />
 
     <InputBox
@@ -336,8 +336,8 @@
         bind:disabled={color1Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleColorChannelEnabled()}
-        on:disabled={() => handleColorChannelDisabled()}
+        onEnabled={() => handleColorChannelEnabled()}
+        onDisabled={() => handleColorChannelDisabled()}
     />
 
     <InputBox
@@ -348,8 +348,8 @@
         bind:disabled={color2Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleColorChannelEnabled()}
-        on:disabled={() => handleColorChannelDisabled()}
+        onEnabled={() => handleColorChannelEnabled()}
+        onDisabled={() => handleColorChannelDisabled()}
     />
 
     <InputBox
@@ -360,8 +360,8 @@
         bind:disabled={color3Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleColorChannelEnabled()}
-        on:disabled={() => handleColorChannelDisabled()}
+        onEnabled={() => handleColorChannelEnabled()}
+        onDisabled={() => handleColorChannelDisabled()}
     />
 
     <InputBox
@@ -372,8 +372,8 @@
         bind:disabled={color4Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleColorChannelEnabled()}
-        on:disabled={() => handleColorChannelDisabled()}
+        onEnabled={() => handleColorChannelEnabled()}
+        onDisabled={() => handleColorChannelDisabled()}
     />
 
     <label class="checkbox reverse">
@@ -395,7 +395,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
         {text.aplicarColor}
     </button>
 

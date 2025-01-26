@@ -5,10 +5,12 @@
 
     const title: string = text.copiarMovimiento;
 
-    let rawBaseLine: string =
-        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!";
-    let rawTargetLines: string = "";
-    let rawResultLines: string = "";
+    let rawBaseLine = $state<string>(
+        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!",
+    );
+
+    let rawTargetLines = $state<string>("");
+    let rawResultLines = $state<string>("");
 
     function processLines(): void {
         if (rawTargetLines.length == 0) {
@@ -123,7 +125,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
         {text.copiarMovimiento}
     </button>
 
@@ -135,8 +137,8 @@
                 role="button"
                 tabindex="0"
                 title="Copiar"
-                on:click={() => copyResult()}
-                on:keydown={() => {}}
+                onclick={() => copyResult()}
+                onkeydown={() => {}}
             ></i>
         </label>
         <div class="control">

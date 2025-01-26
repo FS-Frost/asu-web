@@ -5,8 +5,8 @@
 
     const title: string = text.dividirSilabas;
 
-    let rawTargetLines: string = "";
-    let rawResultLines: string = "";
+    let rawTargetLines = $state<string>("");
+    let rawResultLines = $state<string>("");
 
     function processLines(): void {
         if (rawTargetLines.length == 0) {
@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
         {text.dividirSilabas}
     </button>
 
@@ -89,8 +89,8 @@
                 role="button"
                 tabindex="0"
                 title="Copiar"
-                on:click={() => copyResult()}
-                on:keydown={() => {}}
+                onclick={() => copyResult()}
+                onkeydown={() => {}}
             ></i>
         </label>
         <div class="control">

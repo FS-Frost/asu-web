@@ -10,38 +10,38 @@
     const startPlaceholder: string = "0";
     const endPlaceholder: string = "FF";
 
-    let rawTargetLines: string = "";
-    let rawResultLines: string = "";
-    let alphaTotalStart: string = "0";
-    let alphaTotalEnd: string = "FF";
-    let alpha1Start: string = "0";
-    let alpha1End: string = "FF";
-    let alpha2Start: string = "0";
-    let alpha2End: string = "FF";
-    let alpha3Start: string = "0";
-    let alpha3End: string = "FF";
-    let alpha4Start: string = "0";
-    let alpha4End: string = "FF";
+    let rawTargetLines = $state<string>("");
+    let rawResultLines = $state<string>("");
+    let alphaTotalStart = $state<string>("0");
+    let alphaTotalEnd = $state<string>("FF");
+    let alpha1Start = $state<string>("0");
+    let alpha1End = $state<string>("FF");
+    let alpha2Start = $state<string>("0");
+    let alpha2End = $state<string>("FF");
+    let alpha3Start = $state<string>("0");
+    let alpha3End = $state<string>("FF");
+    let alpha4Start = $state<string>("0");
+    let alpha4End = $state<string>("FF");
 
-    let alphaTotalDisabled: boolean = false;
-    let alpha1Disabled: boolean = true;
-    let alpha2Disabled: boolean = true;
-    let alpha3Disabled: boolean = true;
-    let alpha4Disabled: boolean = true;
+    let alphaTotalDisabled = $state<boolean>(false);
+    let alpha1Disabled = $state<boolean>(true);
+    let alpha2Disabled = $state<boolean>(true);
+    let alpha3Disabled = $state<boolean>(true);
+    let alpha4Disabled = $state<boolean>(true);
 
-    let inputBoxAlphaTotal: InputBox;
-    let inputBoxAlpha1: InputBox;
-    let inputBoxAlpha2: InputBox;
-    let inputBoxAlpha3: InputBox;
-    let inputBoxAlpha4: InputBox;
+    let inputBoxAlphaTotal = $state<InputBox>();
+    let inputBoxAlpha1 = $state<InputBox>();
+    let inputBoxAlpha2 = $state<InputBox>();
+    let inputBoxAlpha3 = $state<InputBox>();
+    let inputBoxAlpha4 = $state<InputBox>();
 
-    let reverseLinesEnabled: boolean = false;
+    let reverseLinesEnabled = $state<boolean>(false);
 
     function handleAlphaTotalEnabled(): void {
-        inputBoxAlpha1.disable();
-        inputBoxAlpha2.disable();
-        inputBoxAlpha3.disable();
-        inputBoxAlpha4.disable();
+        inputBoxAlpha1?.disable();
+        inputBoxAlpha2?.disable();
+        inputBoxAlpha3?.disable();
+        inputBoxAlpha4?.disable();
     }
 
     function handleAlphaTotalDisabled(): void {
@@ -51,15 +51,15 @@
             alpha3Disabled &&
             alpha4Disabled
         ) {
-            inputBoxAlpha1.enable();
-            inputBoxAlpha2.disable();
-            inputBoxAlpha3.disable();
-            inputBoxAlpha4.disable();
+            inputBoxAlpha1?.enable();
+            inputBoxAlpha2?.disable();
+            inputBoxAlpha3?.disable();
+            inputBoxAlpha4?.disable();
         }
     }
 
     function handleAlphaChannelEnabled(): void {
-        inputBoxAlphaTotal.disable();
+        inputBoxAlphaTotal?.disable();
     }
 
     function handleAlphaChannelDisabled(): void {
@@ -69,7 +69,7 @@
             alpha3Disabled &&
             alpha4Disabled
         ) {
-            inputBoxAlphaTotal.enable();
+            inputBoxAlphaTotal?.enable();
         }
     }
 
@@ -372,8 +372,8 @@
         bind:disabled={alphaTotalDisabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleAlphaTotalEnabled()}
-        on:disabled={() => handleAlphaTotalDisabled()}
+        onEnabled={() => handleAlphaTotalEnabled()}
+        onDisabled={() => handleAlphaTotalDisabled()}
     />
 
     <InputBox
@@ -382,8 +382,10 @@
         bind:startValue={alpha1Start}
         bind:endValue={alpha1End}
         bind:disabled={alpha1Disabled}
-        on:enabled={() => handleAlphaChannelEnabled()}
-        on:disabled={() => handleAlphaChannelDisabled()}
+        {startPlaceholder}
+        {endPlaceholder}
+        onEnabled={() => handleAlphaChannelEnabled()}
+        onDisabled={() => handleAlphaChannelDisabled()}
     />
 
     <InputBox
@@ -394,8 +396,8 @@
         bind:disabled={alpha2Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleAlphaChannelEnabled()}
-        on:disabled={() => handleAlphaChannelDisabled()}
+        onEnabled={() => handleAlphaChannelEnabled()}
+        onDisabled={() => handleAlphaChannelDisabled()}
     />
 
     <InputBox
@@ -406,8 +408,8 @@
         bind:disabled={alpha3Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleAlphaChannelEnabled()}
-        on:disabled={() => handleAlphaChannelDisabled()}
+        onEnabled={() => handleAlphaChannelEnabled()}
+        onDisabled={() => handleAlphaChannelDisabled()}
     />
 
     <InputBox
@@ -418,8 +420,8 @@
         bind:disabled={alpha4Disabled}
         {startPlaceholder}
         {endPlaceholder}
-        on:enabled={() => handleAlphaChannelEnabled()}
-        on:disabled={() => handleAlphaChannelDisabled()}
+        onEnabled={() => handleAlphaChannelEnabled()}
+        onDisabled={() => handleAlphaChannelDisabled()}
     />
 
     <label class="checkbox reverse">
@@ -441,7 +443,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
         {text.aplicarAlpha}
     </button>
 

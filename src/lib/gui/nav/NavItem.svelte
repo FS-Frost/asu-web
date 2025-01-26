@@ -2,9 +2,14 @@
     import { activePage, type ActivePage } from "$lib/activePage";
     import { onMount } from "svelte";
 
-    export let text: string;
-    export let page: ActivePage;
-    let isActive: boolean = false;
+    type Props = {
+        text: string;
+        page: ActivePage;
+    };
+
+    let { text, page }: Props = $props();
+
+    let isActive = $state<boolean>(false);
 
     function generateLink(page: ActivePage): string {
         return `?pagina=${page}`;
@@ -20,7 +25,7 @@
 <a
     class="navbar-item {isActive ? 'is-active' : ''}"
     href={generateLink(page)}
-    on:click={() => activePage.set(page)}
+    onclick={() => activePage.set(page)}
 >
     {text}
 </a>

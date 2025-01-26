@@ -1,22 +1,32 @@
 <script lang="ts">
-    import { createEventDispatcher, onMount } from "svelte";
+    import { onMount } from "svelte";
 
-    export let label: string = "";
-    export let disabled: boolean = false;
-    export let startValue: string = "";
-    export let endValue: string = "";
-    export let startPlaceholder: string = "";
-    export let endPlaceholder: string = "";
+    type Props = {
+        label: string;
+        disabled: boolean;
+        startValue: string;
+        endValue: string;
+        startPlaceholder: string;
+        endPlaceholder: string;
+        onEnabled?: () => void;
+        onDisabled?: () => void;
+    };
 
-    let checkbox: HTMLInputElement;
+    let {
+        label = "",
+        disabled = $bindable(false),
+        startValue = $bindable(""),
+        endValue = $bindable(""),
+        startPlaceholder = "",
+        endPlaceholder = "",
+        onEnabled,
+        onDisabled,
+    }: Props = $props();
 
-    const dispatcher = createEventDispatcher<{
-        enabled: undefined;
-        disabled: undefined;
-    }>();
+    let checkbox = $state<HTMLInputElement>();
 
     function toggleCheck(): void {
-        if (checkbox.checked) {
+        if (checkbox?.checked) {
             enable();
             return;
         }
@@ -27,21 +37,21 @@
     export function enable(): void {
         if (disabled) {
             disabled = false;
-            checkbox.checked = true;
-            dispatcher("enabled");
+            checkbox && (checkbox.checked = true);
+            onEnabled && onEnabled();
         }
     }
 
     export function disable(): void {
         if (!disabled) {
             disabled = true;
-            checkbox.checked = false;
-            dispatcher("disabled");
+            checkbox && (checkbox.checked = false);
+            onDisabled && onDisabled();
         }
     }
 
     onMount(() => {
-        checkbox.checked = !disabled;
+        checkbox && (checkbox.checked = !disabled);
     });
 </script>
 
@@ -50,7 +60,7 @@
         <label class="checkbox">
             <input
                 bind:this={checkbox}
-                on:change={() => toggleCheck()}
+                onchange={() => toggleCheck()}
                 type="checkbox"
             />
 

@@ -10,7 +10,7 @@
     import DividirSilabas from "$lib/gui/pages/karaokes/DividirSilabas.svelte";
     import DividirKaraoke from "$lib/gui/pages/karaokes/DividirKaraoke.svelte";
 
-    let page: ActivePage;
+    let page = $state<ActivePage | "">("");
 
     onMount(() => {
         activePage.subscribe((newActivePage) => {

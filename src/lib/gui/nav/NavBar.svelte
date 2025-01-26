@@ -4,9 +4,9 @@
     import { BuildInfo, getBuildInfo } from "$lib/buildInfo";
     import text from "$lib/text";
 
-    let buildInfo: BuildInfo = BuildInfo.parse({});
-    let navMenu: HTMLElement;
-    let navToggle: HTMLElement;
+    let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
+    let navMenu = $state<HTMLElement>();
+    let navToggle = $state<HTMLElement>();
 
     function toggleMenu(): void {
         if (navToggle) {
@@ -26,14 +26,14 @@
 <nav class="navbar">
     <a
         bind:this={navToggle}
-        on:click={() => toggleMenu()}
+        onclick={() => toggleMenu()}
         role="button"
         tabindex="0"
         class="navbar-burger"
         data-target="navMenu"
         aria-label="menu"
         aria-expanded="false"
-        on:keydown={() => {}}
+        onkeydown={() => {}}
         href={`javascript:;`}
     >
         <span aria-hidden="true"></span>

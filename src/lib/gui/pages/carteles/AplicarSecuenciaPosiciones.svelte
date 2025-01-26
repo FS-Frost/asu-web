@@ -5,10 +5,10 @@
 
     const title: string = text.aplicarSecuenciaPosiciones;
 
-    let rawBaseLines: string = "";
-    let rawTargetLines: string = "";
-    let rawResultLines: string = "";
-    let reverseLinesEnabled: boolean = false;
+    let rawBaseLines = $state<string>("");
+    let rawTargetLines = $state<string>("");
+    let rawResultLines = $state<string>("");
+    let reverseLinesEnabled = $state<boolean>(false);
 
     function processLines(): void {
         if (rawTargetLines.length == 0) {
@@ -234,7 +234,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => processLines()}>
+    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
         {text.aplicarSecuenciaPosiciones}
     </button>
 
@@ -246,8 +246,8 @@
                 role="button"
                 tabindex="0"
                 title="Copiar"
-                on:click={() => copyResult()}
-                on:keydown={() => {}}
+                onclick={() => copyResult()}
+                onkeydown={() => {}}
             ></i>
         </label>
         <div class="control">

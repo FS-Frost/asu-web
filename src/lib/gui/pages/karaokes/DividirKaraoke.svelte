@@ -14,11 +14,11 @@
     const placeholderKaraoke: string =
         "Comment: 0,0:02:44.95,0:02:50.57,Romaji C,,0,0,0,karaoke,{\\kf32}ko{\\kf34}no {\\kf32}de{\\kf32}a{\\kf18}i {\\kf49}ga{\\kf31}{\\k0} {\\kf37}mi{\\kf31}n{\\kf34}na {\\kf19}wo {\\kf31}ka{\\kf34}e{\\kf63}ru {\\kf52}ka{\\kf33}na";
 
-    let rawKaraoke: string = placeholderKaraoke;
-    let previews: string[] = [];
-    let rawResultLines: string = "";
-    let syls: Syl[] = [];
-    let splitSylIndex: number = 0;
+    let rawKaraoke = $state<string>(placeholderKaraoke);
+    let previews = $state<string[]>([]);
+    let rawResultLines = $state<string>("");
+    let syls = $state<Syl[]>([]);
+    let splitSylIndex = $state<number>(0);
 
     function processLines(): void {
         const line = asu.parseLine(rawKaraoke);
@@ -193,7 +193,7 @@
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" on:click={() => parseKaraoke()}>
+    <button class="button is-link is-fullwidth" onclick={() => parseKaraoke()}>
         Actualizar karaoke
     </button>
 
@@ -207,7 +207,7 @@
                             ? 'is-link'
                             : ''}"
                         title={`${syl.text}: ${syl.centiseconds} centésimas`}
-                        on:click={() => {
+                        onclick={() => {
                             splitSylIndex = index;
                             processLines();
                         }}
@@ -235,8 +235,8 @@
                 role="button"
                 tabindex="0"
                 title="Copiar"
-                on:click={() => copyResult()}
-                on:keydown={() => {}}
+                onclick={() => copyResult()}
+                onkeydown={() => {}}
             ></i>
         </label>
         <div class="control">

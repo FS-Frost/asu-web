@@ -1,6 +1,11 @@
 <script lang="ts">
     import text from "$lib/text";
-    export let rawResultLines: string;
+
+    type Props = {
+        rawResultLines: string;
+    };
+
+    let { rawResultLines } = $props();
 
     async function copyResult(): Promise<void> {
         await navigator.clipboard.writeText(rawResultLines);
@@ -13,6 +18,6 @@
     role="button"
     tabindex="0"
     title={text.copiar}
-    on:click={() => copyResult()}
-    on:keydown={() => {}}
+    onclick={() => copyResult()}
+    onkeydown={() => {}}
 ></i>
