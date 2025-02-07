@@ -5,7 +5,7 @@
         rawResultLines: string;
     };
 
-    let { rawResultLines } = $props();
+    let { rawResultLines }: Props = $props();
 
     async function copyResult(): Promise<void> {
         await navigator.clipboard.writeText(rawResultLines);
