@@ -4,7 +4,7 @@
     "": {
       "name": "asu-web",
       "dependencies": {
-        "@fs-frost/asu": "npm:@jsr/fs-frost__asu@^1.5.0",
+        "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.6.0",
         "zod": "^3.24.1",
       },
       "devDependencies": {
@@ -68,7 +68,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.21.5", "", { "os": "win32", "cpu": "x64" }, "sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw=="],
 
-    "@fs-frost/asu": ["@jsr/fs-frost__asu@1.5.0", "https://npm.jsr.io/~/11/@jsr/fs-frost__asu/1.5.0.tgz", { "dependencies": { "magic-regexp": "^0.7.0", "zod": "^3.23.8" } }, "sha512-HrCG5dO9JPSVDD2SGSj4N5qPyLF/tkBbraOP+H54FEFTsVkGJWLMhFqVbtsfpN+GuJ6nq8ZLo+KZyl00IS0qow=="],
+    "@fs-frost/asu": ["@jsr/fs-frost__asu@1.6.0", "https://npm.jsr.io/~/11/@jsr/fs-frost__asu/1.6.0.tgz", { "dependencies": { "magic-regexp": "^0.7.0", "zod": "^3.23.8" } }, "sha512-Ohnq73oY5JcuRrevnEOGAZnNQZxmKBFuuqBvkpoEPMDCA1jKE6opsfqORuf1mbG2YdrYd9f2VpbXTEqk4t1W5w=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.8", "", { "dependencies": { "@jridgewell/set-array": "^1.2.1", "@jridgewell/sourcemap-codec": "^1.4.10", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA=="],
 

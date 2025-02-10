@@ -1,6 +1,7 @@
 <script lang="ts">
     import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
+    import { trimEnd } from "$lib/strings";
 
     const title: string = text.validarDialogos;
 
@@ -8,6 +9,7 @@
         location: string;
         error: string;
         text: string;
+        ignoreRule: string;
     };
 
     type FileResult = {
@@ -28,6 +30,7 @@
                 location: "Script info, wrap style",
                 error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${wrapStyle}"`,
                 text: wrapStyle,
+                ignoreRule: "",
             });
         }
 
@@ -40,6 +43,7 @@
                 location: "Script info, scaled border and shadow",
                 error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${scaledBorderAndShadow}"`,
                 text: scaledBorderAndShadow,
+                ignoreRule: "",
             });
         }
 
@@ -47,7 +51,19 @@
             const line = file.events.lines[i];
             const lineNumber = i + 1;
 
+            if (line.type == asu.LINE_TYPE_COMMENT) {
+                continue;
+            }
+
             if (line.content === "") {
+                continue;
+            }
+
+            const ignoreList: string[] = line.effect
+                .split(" ")
+                .filter((x) => x.startsWith("ignorar-"));
+
+            if (ignoreList.includes("ignorar-linea")) {
                 continue;
             }
 
@@ -56,28 +72,72 @@
             ) {
                 errors.push({
                     location: `Línea ${lineNumber}`,
-                    error: `Estilo "${line.style}" no encontrado`,
-                    text: "",
+                    error: `Estilo no encontrado`,
+                    text: line.style,
+                    ignoreRule: "ignorar-estilo",
                 });
             }
 
             const items = asu.parseContent(line.content);
-            const text = asu.contentsToString(
+            let text = asu.contentsToString(
                 items.filter((item) => item.name === "text"),
             );
 
-            const validSufixes: string[] = [".", ",", "...", "!", "?", ":"];
+            if (!ignoreList.includes("ignorar-inicio")) {
+                const errorMessage = validarInicio(text);
+                if (errorMessage != null) {
+                    errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-inicio",
+                    });
+                }
+            }
 
-            if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
-                errors.push({
-                    location: `Línea ${lineNumber}`,
-                    error: `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`,
-                    text: line.content,
-                });
+            if (!ignoreList.includes("ignorar-fin")) {
+                text = trimEnd(text, " ");
+                const validSufixes: string[] = [
+                    ".",
+                    ",",
+                    "...",
+                    "!",
+                    "?",
+                    ":",
+                    "~",
+                    "-...",
+                ];
+
+                if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
+                    errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`,
+                        text: line.content,
+                        ignoreRule: "ignorar-fin",
+                    });
+                }
             }
         }
 
         return errors;
+    }
+
+    function validarInicio(text: string): string | null {
+        if (text.startsWith("... ")) {
+            return "los tres puntos van pegados";
+        }
+
+        if (text.startsWith("...")) {
+            text = text.substring("...".length);
+        }
+
+        const re = /^(-\s|¡|¿|")*[A-zÁÉÍÓÚáéíóú0-9ñÑ]/gm;
+
+        if (!re.test(text)) {
+            return "inicio inválido";
+        }
+
+        return null;
     }
 
     async function handleFiles(): Promise<void> {
@@ -139,6 +199,13 @@
                             readonly
                             rows="1"
                         ></textarea>
+
+                        {#if error.ignoreRule != ""}
+                            <span class="ignore-rule">
+                                Para ignorar, colocar <b>{error.ignoreRule}</b> en
+                                campo de efecto.
+                            </span>
+                        {/if}
                     </span>
                 {/each}
             </div>
@@ -178,5 +245,9 @@
 
     textarea {
         width: 100%;
+    }
+
+    .ignore-rule {
+        color: darkgray;
     }
 </style>
