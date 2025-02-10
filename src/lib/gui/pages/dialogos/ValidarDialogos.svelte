@@ -4,23 +4,31 @@
 
     const title: string = text.validarDialogos;
 
+    type LineError = {
+        location: string;
+        error: string;
+        text: string;
+    };
+
     type FileResult = {
         fileName: string;
-        errors: string[];
+        errors: LineError[];
     };
 
     let inputFiles = $state<HTMLInputElement>();
     let results = $state<FileResult[]>([]);
 
-    function validateSubs(file: asu.ASSFile): string[] {
-        const errors: string[] = [];
+    function validateSubs(file: asu.ASSFile): LineError[] {
+        const errors: LineError[] = [];
 
         const wrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
         const expectedWrapStyle = "0";
         if (wrapStyle !== expectedWrapStyle) {
-            errors.push(
-                `script info, wrap style: se esperaba "${expectedWrapStyle}", pero se encontró "${wrapStyle}"`,
-            );
+            errors.push({
+                location: "Script info, wrap style",
+                error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${wrapStyle}"`,
+                text: wrapStyle,
+            });
         }
 
         const scaledBorderAndShadow =
@@ -28,9 +36,45 @@
 
         const expectedScaledBorderAndShadow = "yes";
         if (scaledBorderAndShadow !== expectedScaledBorderAndShadow) {
-            errors.push(
-                `script info, scaled border and shadow: se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${scaledBorderAndShadow}"`,
+            errors.push({
+                location: "Script info, scaled border and shadow",
+                error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${scaledBorderAndShadow}"`,
+                text: scaledBorderAndShadow,
+            });
+        }
+
+        for (let i = 0; i < file.events.lines.length; i++) {
+            const line = file.events.lines[i];
+            const lineNumber = i + 1;
+
+            if (line.content === "") {
+                continue;
+            }
+
+            if (
+                !file.styles.styles.some((style) => line.style === style.name)
+            ) {
+                errors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: `Estilo "${line.style}" no encontrado`,
+                    text: "",
+                });
+            }
+
+            const items = asu.parseContent(line.content);
+            const text = asu.contentsToString(
+                items.filter((item) => item.name === "text"),
             );
+
+            const validSufixes: string[] = [".", ",", "...", "!", "?", ":"];
+
+            if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
+                errors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`,
+                    text: line.content,
+                });
+            }
         }
 
         return errors;
@@ -85,9 +129,16 @@
             </span>
 
             <div class="file-errors">
-                {#each result.errors as error, i}
+                {#each result.errors as error}
                     <span class="file-error">
-                        {i + 1}. {error}
+                        {error.location}: {error.error}
+
+                        <textarea
+                            class="textarea is-danger"
+                            value={error.text}
+                            readonly
+                            rows="1"
+                        ></textarea>
                     </span>
                 {/each}
             </div>
@@ -123,5 +174,9 @@
 
     .file-error {
         color: red;
+    }
+
+    textarea {
+        width: 100%;
     }
 </style>
