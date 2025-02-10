@@ -312,7 +312,7 @@
 </svelte:head>
 
 <section>
-    <h1 class="title is-5">{title}</h1>
+    <h1>{title}</h1>
 
     <label class="label" for="">Configuración de color</label>
 

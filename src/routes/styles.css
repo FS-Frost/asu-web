@@ -107,3 +107,7 @@ button:focus:not(:focus-visible) {
 .clickable {
 	cursor: pointer;
 }
+
+h1 {
+	font-size: 2rem;
+}

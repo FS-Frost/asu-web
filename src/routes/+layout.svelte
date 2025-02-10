@@ -24,6 +24,7 @@
         flex-direction: column;
         padding-left: 2rem;
         padding-right: 2rem;
+        padding-bottom: 2rem;
         width: 100%;
         margin: 0 auto;
         box-sizing: border-box;

@@ -201,7 +201,7 @@
 </svelte:head>
 
 <section>
-    <h1 class="title is-5">{title}</h1>
+    <h1>{title}</h1>
 
     <div class="field">
         <label class="label" for=""> Secuencia de posiciones </label>

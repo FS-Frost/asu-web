@@ -18,6 +18,7 @@
     };
 
     let inputFiles = $state<HTMLInputElement>();
+    let totalErrors = $state<number>(0);
     let results = $state<FileResult[]>([]);
 
     function validateSubs(file: asu.ASSFile): LineError[] {
@@ -95,11 +96,24 @@
                 }
             }
 
+            if (!ignoreList.includes("ignorar-espacios")) {
+                const errorMessage = validarDobleEspacio(text);
+                if (errorMessage != null) {
+                    errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-espacios",
+                    });
+                }
+            }
+
             if (!ignoreList.includes("ignorar-fin")) {
                 text = trimEnd(text, " ");
                 const validSufixes: string[] = [
                     ".",
                     ",",
+                    ";",
                     "...",
                     "!",
                     "?",
@@ -140,8 +154,17 @@
         return null;
     }
 
+    function validarDobleEspacio(text: string): string | null {
+        if (text.includes("  ")) {
+            return "hay dos espacios seguidos";
+        }
+
+        return null;
+    }
+
     async function handleFiles(): Promise<void> {
         const files = [...(inputFiles?.files ?? [])];
+        totalErrors = 0;
         results = [];
 
         for (const file of files) {
@@ -152,10 +175,11 @@
                 continue;
             }
 
-            const error = validateSubs(assFile);
+            const fileErrors = validateSubs(assFile);
+            totalErrors += fileErrors.length;
             results.push({
                 fileName: file.name,
-                errors: error,
+                errors: fileErrors,
             });
         }
 
@@ -170,7 +194,7 @@
 </svelte:head>
 
 <section>
-    <h1 class="title is-5">{title}</h1>
+    <h1>{title}</h1>
 
     <input
         bind:this={inputFiles}
@@ -180,18 +204,32 @@
         multiple
     />
 
+    {#if results.length > 0}
+        <div class="text-{totalErrors == 0 ? 'success' : 'failed'} mt-2">
+            <b>
+                Errores detectados: {totalErrors}
+            </b>
+        </div>
+    {/if}
+
     {#each results as result}
         <div class="result">
             <span
-                class="name {result.errors.length == 0 ? 'success' : 'failed'}"
+                class="name text-{result.errors.length == 0
+                    ? 'success'
+                    : 'failed'}"
             >
                 {result.fileName}
             </span>
 
+            {#if result.errors.length == 0}
+                <div class="text-success">¡Todo en orden!</div>
+            {/if}
+
             <div class="file-errors">
                 {#each result.errors as error}
                     <span class="file-error">
-                        {error.location}: {error.error}
+                        {error.location}: {error.error}.
 
                         <textarea
                             class="textarea is-danger"
@@ -226,11 +264,11 @@
         font-weight: bold;
     }
 
-    .name.success {
+    .text-success {
         color: darkgreen;
     }
 
-    .name.failed {
+    .text-failed {
         color: red;
     }
 

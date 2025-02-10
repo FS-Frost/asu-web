@@ -16,6 +16,13 @@
     </div>
 
     <p class="mt-2">
+        Asu es una herramienta para automatizar el procesamiento de subtítulos
+        en formato SubStation Alpha Subtitles (SSA/ASS).
+    </p>
+
+    <hr />
+
+    <p>
         Asu versión web, de <a
             href="https://github.com/FS-Frost"
             target="_blank">[FS] Frost</a
@@ -26,17 +33,18 @@
     <p class="mt-2">Agradecimientos por su ayuda a:</p>
 
     <ul>
-        <li>- [GX] Gonxas: hardcore testing y script para crear AVS.</li>
+        <li>
+            - <b>[GX] Gonxas</b>: por el hardcore testing y el script para crear
+            archivos AVS.
+        </li>
 
-        <li>- [Sr] Hell: servicio de host.</li>
+        <li>- <b>[Sr] Hell</b>: por proveer un servicio de host.</li>
 
-        <li>- [EC] DarkAngel: idea para separar sílabas en karaokes.</li>
+        <li>
+            - <b>[EC] DarkAngel</b>: por desarrollar <b>SyncRajoEndline</b> y por
+            la idea de separar sílabas en karaokes.
+        </li>
     </ul>
-
-    <p class="mt-2">
-        Asu es una herramienta para automatizar el procesamiento de subtítulos
-        en formato SubStation Alpha Subtitles (SSA/ASS).
-    </p>
 
     <p class="mt-2">
         <b>
@@ -47,7 +55,9 @@
         </b>
     </p>
 
-    <p class="mt-2">Versiones de Asu:</p>
+    <hr />
+
+    <p>Versiones de Asu:</p>
 
     <ul>
         <li>
@@ -81,5 +91,10 @@
 
     .kagamin img {
         width: 100%;
+    }
+
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
     }
 </style>
