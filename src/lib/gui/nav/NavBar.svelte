@@ -73,6 +73,17 @@
             </div>
 
             <div class="navbar-item has-dropdown is-hoverable">
+                <div class="navbar-link">Diálogos</div>
+
+                <div class="navbar-dropdown">
+                    <NavItem
+                        text={text.validarDialogos}
+                        page="dialogos.validarDialogos"
+                    />
+                </div>
+            </div>
+
+            <div class="navbar-item has-dropdown is-hoverable">
                 <div class="navbar-link">Karaokes</div>
 
                 <div class="navbar-dropdown">

@@ -7,6 +7,7 @@ const pagesKeys = <const>[
     "carteles.aplicarSecuenciaPosiciones",
     "carteles.aplicarAlpha",
     "carteles.aplicarColor",
+    "dialogos.validarDialogos",
     "karaokes.dividirKaraoke",
     "karaokes.dividirSilabas",
 ];

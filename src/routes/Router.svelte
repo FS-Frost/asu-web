@@ -9,6 +9,7 @@
     import AplicarSecuenciaPosiciones from "$lib/gui/pages/carteles/AplicarSecuenciaPosiciones.svelte";
     import DividirSilabas from "$lib/gui/pages/karaokes/DividirSilabas.svelte";
     import DividirKaraoke from "$lib/gui/pages/karaokes/DividirKaraoke.svelte";
+    import ValidarDialogos from "$lib/gui/pages/dialogos/ValidarDialogos.svelte";
 
     let page = $state<ActivePage | "">("");
 
@@ -38,6 +39,8 @@
     <AplicarAlpha />
 {:else if page == "carteles.aplicarColor"}
     <AplicarColor />
+{:else if page == "dialogos.validarDialogos"}
+    <ValidarDialogos />
 {:else if page == "karaokes.dividirKaraoke"}
     <DividirKaraoke />
 {:else if page == "karaokes.dividirSilabas"}
