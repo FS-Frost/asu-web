@@ -4,15 +4,15 @@
 
 https://fs-frost.github.io/asu-web/
 
+Asu es una herramienta para automatizar el procesamiento de subtítulos en formato SubStation Alpha Subtitles (SSA/ASS).
+
 Asu versión web, de [[FS] Frost](https://github.com/FS-Frost) para [SyncRajo Fansub](http://syncrajo.net).
 
 Agradecimientos por su ayuda a:
 
-- **[GX] Gonxas**: hardcore testing y script para crear AVS.
-- **[Sr] Hell**: servicio de host.
-- **[EC] DarkAngel**: idea para separar sílabas en karaokes.
-
-Asu es una herramienta para automatizar el procesamiento de subtítulos en formato SubStation Alpha Subtitles (SSA/ASS).
+- **[EC] DarkAngel**: por desarrollar SyncRajoEndline y por la idea de separar sílabas en karaokes.
+- **[GX] Gonxas**: por el hardcore testing y el script para crear archivos AVS.
+- **[Sr] Hell**: por proveer un servicio de host.
 
 Visítanos en http://syncrajo.net
 
