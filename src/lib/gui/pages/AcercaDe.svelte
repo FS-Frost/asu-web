@@ -34,16 +34,16 @@
 
     <ul>
         <li>
+            - <b>[EC] DarkAngel</b>: por desarrollar <b>SyncRajoEndline</b> y por
+            la idea de separar sílabas en karaokes.
+        </li>
+
+        <li>
             - <b>[GX] Gonxas</b>: por el hardcore testing y el script para crear
             archivos AVS.
         </li>
 
         <li>- <b>[Sr] Hell</b>: por proveer un servicio de host.</li>
-
-        <li>
-            - <b>[EC] DarkAngel</b>: por desarrollar <b>SyncRajoEndline</b> y por
-            la idea de separar sílabas en karaokes.
-        </li>
     </ul>
 
     <p class="mt-2">
