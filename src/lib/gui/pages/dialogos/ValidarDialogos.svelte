@@ -2,8 +2,18 @@
     import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
     import { trimEnd } from "$lib/strings";
+    import SubsArea from "./SubsArea.svelte";
 
     const title: string = text.validarDialogos;
+
+    const subsModes = [
+        "automático",
+        "carteles",
+        "diálogos",
+        "karaokes",
+    ] as const;
+
+    type SubsMode = (typeof subsModes)[number];
 
     type LineError = {
         location: string;
@@ -13,16 +23,30 @@
     };
 
     type FileResult = {
+        subsType: string;
         fileName: string;
         errors: LineError[];
     };
 
+    let userSubsMode = $state<SubsMode>("automático");
+    let actualSubsMode = $state<SubsMode>("diálogos");
     let inputFiles = $state<HTMLInputElement>();
     let totalErrors = $state<number>(0);
     let results = $state<FileResult[]>([]);
 
     function validateSubs(file: asu.ASSFile): LineError[] {
         const errors: LineError[] = [];
+
+        if (actualSubsMode === "carteles") {
+            errors.push({
+                location: "Modo",
+                error: `El modo ${actualSubsMode} no está soportado`,
+                text: "",
+                ignoreRule: "",
+            });
+
+            return errors;
+        }
 
         const wrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
         const expectedWrapStyle = "0";
@@ -48,16 +72,52 @@
             });
         }
 
+        let totalKaraokeLines = 0;
+
         for (let i = 0; i < file.events.lines.length; i++) {
             const line = file.events.lines[i];
             const lineNumber = i + 1;
 
-            if (line.type == asu.LINE_TYPE_COMMENT) {
+            if (
+                actualSubsMode !== "karaokes" &&
+                line.effect.includes("template syl")
+            ) {
+                console.info(
+                    `template syl detectado en línea ${lineNumber}, pasando a modo karaokes`,
+                );
+
+                actualSubsMode = "karaokes";
+                continue;
+            }
+
+            if (
+                actualSubsMode == "diálogos" &&
+                line.type == asu.LINE_TYPE_COMMENT
+            ) {
                 continue;
             }
 
             if (line.content === "") {
                 continue;
+            }
+
+            if (actualSubsMode === "karaokes" && line.style !== "Español") {
+                continue;
+            }
+
+            if (
+                actualSubsMode === "karaokes" &&
+                line.type !== asu.LINE_TYPE_COMMENT
+            ) {
+                continue;
+            }
+
+            if (actualSubsMode === "karaokes" && line.effect !== "karaoke") {
+                continue;
+            }
+
+            if (actualSubsMode === "karaokes" && line.effect === "fx") {
+                break;
             }
 
             const ignoreList: string[] = line.effect
@@ -131,6 +191,19 @@
                     });
                 }
             }
+
+            if (actualSubsMode === "karaokes") {
+                totalKaraokeLines++;
+            }
+        }
+
+        if (actualSubsMode === "karaokes" && totalKaraokeLines === 0) {
+            errors.push({
+                location: `Línea ${file.events.lines.length}`,
+                error: "No se encontraron líneas de karaoke en español",
+                text: "",
+                ignoreRule: "",
+            });
         }
 
         return errors;
@@ -145,7 +218,7 @@
             text = text.substring("...".length);
         }
 
-        const re = /^(-\s|¡|¿|")*[A-zÁÉÍÓÚáéíóú0-9ñÑ]/gm;
+        const re = /^(-\s|¡|¿|"|“)*[A-zÁÉÍÓÚáéíóú0-9ñÑ]/gm;
 
         if (!re.test(text)) {
             return "inicio inválido";
@@ -175,9 +248,12 @@
                 continue;
             }
 
+            actualSubsMode = detectSubsMode(file.name, userSubsMode);
+
             const fileErrors = validateSubs(assFile);
             totalErrors += fileErrors.length;
             results.push({
+                subsType: actualSubsMode,
                 fileName: file.name,
                 errors: fileErrors,
             });
@@ -187,6 +263,31 @@
             inputFiles.value = "";
         }
     }
+
+    function detectSubsMode(
+        fileName: string,
+        userSubsMode: SubsMode,
+    ): SubsMode {
+        if (userSubsMode !== "automático") {
+            return userSubsMode;
+        }
+
+        fileName = fileName.toLocaleLowerCase();
+
+        if (fileName.includes("carteles")) {
+            return "carteles";
+        }
+
+        if (fileName.includes("subs")) {
+            return "diálogos";
+        }
+
+        if (fileName.includes("karaoke")) {
+            return "karaokes";
+        }
+
+        return "diálogos";
+    }
 </script>
 
 <svelte:head>
@@ -195,6 +296,14 @@
 
 <section>
     <h1>{title}</h1>
+
+    <div class="select is-fullwidth mb-2">
+        <select bind:value={userSubsMode}>
+            {#each subsModes as mode}
+                <option value={mode}>Modo {mode}</option>
+            {/each}
+        </select>
+    </div>
 
     <input
         bind:this={inputFiles}
@@ -223,7 +332,13 @@
             </span>
 
             {#if result.errors.length == 0}
-                <div class="text-success">¡Todo en orden!</div>
+                <div class="text-success">
+                    ¡Todo en orden! Detectado como {result.subsType}.
+                </div>
+            {:else}
+                <div class="text-failed">
+                    Detectado como {result.subsType}.
+                </div>
             {/if}
 
             <div class="file-errors">
@@ -231,12 +346,10 @@
                     <span class="file-error">
                         {error.location}: {error.error}.
 
-                        <textarea
-                            class="textarea is-danger"
-                            value={error.text}
-                            readonly
-                            rows="1"
-                        ></textarea>
+                        {#if error.text != ""}
+                            <SubsArea text={error.text} rawMode={false}
+                            ></SubsArea>
+                        {/if}
 
                         {#if error.ignoreRule != ""}
                             <span class="ignore-rule">
@@ -279,10 +392,6 @@
 
     .file-error {
         color: red;
-    }
-
-    textarea {
-        width: 100%;
     }
 
     .ignore-rule {
