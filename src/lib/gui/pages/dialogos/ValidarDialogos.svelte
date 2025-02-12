@@ -314,11 +314,31 @@
     />
 
     {#if results.length > 0}
-        <div class="text-{totalErrors == 0 ? 'success' : 'failed'} mt-2">
+        <div
+            class="error-counter text-{totalErrors == 0
+                ? 'success'
+                : 'failed'} mt-2"
+        >
             <b>
                 Errores detectados: {totalErrors}
             </b>
         </div>
+
+        {#if totalErrors === 0}
+            <img
+                class="result-image"
+                src="img/lucky-star-yay.gif"
+                alt="Lucky Star"
+                title="Lucky Star"
+            />
+        {:else}
+            <img
+                class="result-image"
+                src="img/under-arrest.gif"
+                alt="You're Under Arrest"
+                title="You're Under Arrest"
+            />
+        {/if}
     {/if}
 
     {#each results as result}
@@ -367,6 +387,14 @@
 <style>
     section {
         width: 100%;
+    }
+
+    .error-counter {
+        width: 100%;
+    }
+
+    .result-image {
+        height: 15rem;
     }
 
     .result {
