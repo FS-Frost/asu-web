@@ -38,13 +38,6 @@
         const errors: LineError[] = [];
 
         if (actualSubsMode === "carteles") {
-            errors.push({
-                location: "Modo",
-                error: `El modo ${actualSubsMode} no está soportado`,
-                text: "",
-                ignoreRule: "",
-            });
-
             return errors;
         }
 
@@ -331,6 +324,13 @@
                 alt="Lucky Star"
                 title="Lucky Star"
             />
+        {:else if totalErrors > 10}
+            <img
+                class="result-image"
+                src="img/nichijou.webp"
+                alt="Nichijou"
+                title="Nichijou"
+            />
         {:else}
             <img
                 class="result-image"
@@ -346,14 +346,18 @@
             <span
                 class="name text-{result.errors.length == 0
                     ? 'success'
-                    : 'failed'}"
+                    : 'failed'} text-{result.subsType}"
             >
                 {result.fileName}
             </span>
 
             {#if result.errors.length == 0}
-                <div class="text-success">
+                <div class="text-success text-{result.subsType}">
                     ¡Todo en orden! Detectado como {result.subsType}.
+
+                    {#if result.subsType === "carteles"}
+                        Ignorado.
+                    {/if}
                 </div>
             {:else}
                 <div class="text-failed">
@@ -411,6 +415,10 @@
 
     .text-failed {
         color: red;
+    }
+
+    .text-carteles {
+        color: darkgray;
     }
 
     .file-errors {
