@@ -185,6 +185,57 @@
                 }
             }
 
+            if (!ignoreList.includes("ignorar-puntuacion")) {
+                for (let index = 0; index < text.length; index++) {
+                    const targetChars: string[] = [",", ";", "."];
+                    const char = text[index];
+                    if (!targetChars.includes(char)) {
+                        continue;
+                    }
+
+                    if (index + 1 >= text.length) {
+                        break;
+                    }
+
+                    let nextChar = text[index + 1];
+                    if (nextChar === "\\" && text[index + 2] === "N") {
+                        nextChar = "\\N";
+                    }
+
+                    if (char === "." && nextChar == ".") {
+                        continue;
+                    }
+
+                    const sonPuntosSuspensivos =
+                        char === "." &&
+                        text[index - 1] === "." &&
+                        text[index - 2] === ".";
+
+                    if (sonPuntosSuspensivos) {
+                        continue;
+                    }
+
+                    const esNumeroDecimal =
+                        (char === "." || char === ",") &&
+                        !Number.isNaN(Number(text[index - 1])) &&
+                        !Number.isNaN(Number(text[index + 1]));
+
+                    if (esNumeroDecimal) {
+                        continue;
+                    }
+
+                    const allowedNextChars: string[] = [" ", "\\N"];
+                    if (!allowedNextChars.includes(nextChar)) {
+                        errors.push({
+                            location: `Línea ${lineNumber}`,
+                            error: "La coma (,) y el punto y coma (;) deben ser seguidos de un espacio o salto de línea",
+                            text: line.content,
+                            ignoreRule: "ignorar-puntuacion",
+                        });
+                    }
+                }
+            }
+
             if (actualSubsMode === "karaokes") {
                 totalKaraokeLines++;
             }

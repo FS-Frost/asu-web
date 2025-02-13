@@ -31,7 +31,9 @@
         }
 
         const items = asu.parseContent(text).filter((x) => x.name === "text");
-        visibleText = asu.contentsToString(items);
+        let newText = asu.contentsToString(items);
+        newText = newText.replaceAll("\\N", "");
+        visibleText = newText;
     }
 
     function updateRows(): void {
