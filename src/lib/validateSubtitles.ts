@@ -1,0 +1,280 @@
+import * as asu from "@fs-frost/asu";
+import { trimEnd } from "./strings";
+
+export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
+
+export type SubtitleMode = (typeof SUBTITLE_MODES)[number];
+
+export type SubtitleError = {
+    location: string;
+    error: string;
+    text: string;
+    ignoreRule: string;
+};
+
+export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): SubtitleError[] {
+    const subtitleErrors: SubtitleError[] = [];
+
+    if (actualSubsMode === "carteles") {
+        return subtitleErrors;
+    }
+
+    const wrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
+    const expectedWrapStyle = "0";
+    if (wrapStyle !== expectedWrapStyle) {
+        subtitleErrors.push({
+            location: "Script info, wrap style",
+            error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${wrapStyle}"`,
+            text: wrapStyle,
+            ignoreRule: "",
+        });
+    }
+
+    const scaledBorderAndShadow =
+        file.scriptInfo.properties.get("ScaledBorderAndShadow") ?? "";
+
+    const expectedScaledBorderAndShadow = "yes";
+    if (scaledBorderAndShadow !== expectedScaledBorderAndShadow) {
+        subtitleErrors.push({
+            location: "Script info, scaled border and shadow",
+            error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${scaledBorderAndShadow}"`,
+            text: scaledBorderAndShadow,
+            ignoreRule: "",
+        });
+    }
+
+    let totalKaraokeLines = 0;
+
+    for (let i = 0; i < file.events.lines.length; i++) {
+        const line = file.events.lines[i];
+        const lineNumber = i + 1;
+
+        if (
+            actualSubsMode !== "karaokes" &&
+            line.effect.includes("template syl")
+        ) {
+            console.info(
+                `template syl detectado en línea ${lineNumber}, pasando a modo karaokes`,
+            );
+
+            actualSubsMode = "karaokes";
+            continue;
+        }
+
+        if (
+            actualSubsMode == "diálogos" &&
+            line.type == asu.LINE_TYPE_COMMENT
+        ) {
+            continue;
+        }
+
+        if (line.content === "") {
+            continue;
+        }
+
+        if (actualSubsMode === "karaokes" && line.style !== "Español") {
+            continue;
+        }
+
+        if (
+            actualSubsMode === "karaokes" &&
+            line.type !== asu.LINE_TYPE_COMMENT
+        ) {
+            continue;
+        }
+
+        if (actualSubsMode === "karaokes" && line.effect !== "karaoke") {
+            continue;
+        }
+
+        if (actualSubsMode === "karaokes" && line.effect === "fx") {
+            break;
+        }
+
+        const ignoreList: string[] = line.effect
+            .split(" ")
+            .filter((x) => x.startsWith("ignorar-"));
+
+        if (ignoreList.includes("ignorar-linea")) {
+            continue;
+        }
+
+        if (
+            !file.styles.styles.some((style) => line.style === style.name)
+        ) {
+            subtitleErrors.push({
+                location: `Línea ${lineNumber}`,
+                error: `Estilo no encontrado`,
+                text: line.style,
+                ignoreRule: "ignorar-estilo",
+            });
+        }
+
+        const items = asu.parseContent(line.content);
+        let text = asu.contentsToString(
+            items.filter((item) => item.name === "text"),
+        );
+
+        if (!ignoreList.includes("ignorar-inicio")) {
+            const errorMessage = validarInicio(text);
+            if (errorMessage != null) {
+                subtitleErrors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: errorMessage,
+                    text: line.content,
+                    ignoreRule: "ignorar-inicio",
+                });
+            }
+        }
+
+        if (!ignoreList.includes("ignorar-espacios")) {
+            const errorMessage = validarDobleEspacio(text);
+            if (errorMessage != null) {
+                subtitleErrors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: errorMessage,
+                    text: line.content,
+                    ignoreRule: "ignorar-espacios",
+                });
+            }
+        }
+
+        if (!ignoreList.includes("ignorar-fin")) {
+            text = trimEnd(text, " ");
+            const validSufixes: string[] = [
+                ".",
+                ",",
+                ";",
+                "...",
+                "!",
+                "?",
+                ":",
+                "~",
+                "-...",
+            ];
+
+            if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
+                subtitleErrors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`,
+                    text: line.content,
+                    ignoreRule: "ignorar-fin",
+                });
+            }
+        }
+
+        if (!ignoreList.includes("ignorar-puntuacion")) {
+            for (let index = 0; index < text.length; index++) {
+                const targetChars: string[] = [",", ";", "."];
+                const char = text[index];
+                if (!targetChars.includes(char)) {
+                    continue;
+                }
+
+                if (index + 1 >= text.length) {
+                    break;
+                }
+
+                let nextChar = text[index + 1];
+                if (nextChar === "\\" && text[index + 2] === "N") {
+                    nextChar = "\\N";
+                }
+
+                if (char === "." && nextChar == ".") {
+                    continue;
+                }
+
+                const sonPuntosSuspensivos =
+                    char === "." &&
+                    text[index - 1] === "." &&
+                    text[index - 2] === ".";
+
+                if (sonPuntosSuspensivos) {
+                    continue;
+                }
+
+                const esNumeroDecimal =
+                    (char === "." || char === ",") &&
+                    !Number.isNaN(Number(text[index - 1])) &&
+                    !Number.isNaN(Number(text[index + 1]));
+
+                if (esNumeroDecimal) {
+                    continue;
+                }
+
+                const allowedNextChars: string[] = [" ", "\\N"];
+                if (!allowedNextChars.includes(nextChar)) {
+                    subtitleErrors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: "La coma (,) y el punto y coma (;) deben ser seguidos de un espacio o salto de línea",
+                        text: line.content,
+                        ignoreRule: "ignorar-puntuacion",
+                    });
+                }
+            }
+        }
+
+        if (actualSubsMode === "karaokes") {
+            totalKaraokeLines++;
+        }
+    }
+
+    if (actualSubsMode === "karaokes" && totalKaraokeLines === 0) {
+        subtitleErrors.push({
+            location: `Línea ${file.events.lines.length}`,
+            error: "No se encontraron líneas de karaoke en español",
+            text: "",
+            ignoreRule: "",
+        });
+    }
+
+    return subtitleErrors;
+}
+
+export function validarInicio(text: string): string | null {
+    if (text.startsWith("... ")) {
+        return "los tres puntos van pegados";
+    }
+
+    if (text.startsWith("...")) {
+        text = text.substring("...".length);
+    }
+
+    const re = /^(-\s|¡|¿|"|“)*[A-zÁÉÍÓÚáéíóú0-9ñÑ]/gm;
+
+    if (!re.test(text)) {
+        return "inicio inválido";
+    }
+
+    return null;
+}
+
+export function validarDobleEspacio(text: string): string | null {
+    if (text.includes("  ")) {
+        return "hay dos espacios seguidos";
+    }
+
+    return null;
+}
+
+export function detectSubtitlesMode(fileName: string, userSubsMode: SubtitleMode): SubtitleMode {
+    if (userSubsMode !== "automático") {
+        return userSubsMode;
+    }
+
+    fileName = fileName.toLocaleLowerCase();
+
+    if (fileName.includes("carteles")) {
+        return "carteles";
+    }
+
+    if (fileName.includes("subs")) {
+        return "diálogos";
+    }
+
+    if (fileName.includes("karaoke")) {
+        return "karaokes";
+    }
+
+    return "diálogos";
+}
