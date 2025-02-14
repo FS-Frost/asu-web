@@ -12,10 +12,10 @@ export type SubtitleError = {
     ignoreRule: string;
 };
 
-export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): SubtitleError[] {
+export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): SubtitleError[] {
     const subtitleErrors: SubtitleError[] = [];
 
-    if (actualSubsMode === "carteles") {
+    if (subtitleMode === "carteles") {
         return subtitleErrors;
     }
 
@@ -50,19 +50,19 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
         const lineNumber = i + 1;
 
         if (
-            actualSubsMode !== "karaokes" &&
+            subtitleMode !== "karaokes" &&
             line.effect.includes("template syl")
         ) {
             console.info(
                 `template syl detectado en línea ${lineNumber}, pasando a modo karaokes`,
             );
 
-            actualSubsMode = "karaokes";
+            subtitleMode = "karaokes";
             continue;
         }
 
         if (
-            actualSubsMode == "diálogos" &&
+            subtitleMode == "diálogos" &&
             line.type == asu.LINE_TYPE_COMMENT
         ) {
             continue;
@@ -72,22 +72,22 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
             continue;
         }
 
-        if (actualSubsMode === "karaokes" && line.style !== "Español") {
+        if (subtitleMode === "karaokes" && line.style !== "Español") {
             continue;
         }
 
         if (
-            actualSubsMode === "karaokes" &&
+            subtitleMode === "karaokes" &&
             line.type !== asu.LINE_TYPE_COMMENT
         ) {
             continue;
         }
 
-        if (actualSubsMode === "karaokes" && line.effect !== "karaoke") {
+        if (subtitleMode === "karaokes" && line.effect !== "karaoke") {
             continue;
         }
 
-        if (actualSubsMode === "karaokes" && line.effect === "fx") {
+        if (subtitleMode === "karaokes" && line.effect === "fx") {
             break;
         }
 
@@ -116,7 +116,7 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
         );
 
         if (!ignoreList.includes("ignorar-inicio")) {
-            const errorMessage = validarInicio(text);
+            const errorMessage = validateDialogueStart(text);
             if (errorMessage != null) {
                 subtitleErrors.push({
                     location: `Línea ${lineNumber}`,
@@ -128,7 +128,7 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
         }
 
         if (!ignoreList.includes("ignorar-espacios")) {
-            const errorMessage = validarDobleEspacio(text);
+            const errorMessage = validateDialogueMultipleSpaces(text);
             if (errorMessage != null) {
                 subtitleErrors.push({
                     location: `Línea ${lineNumber}`,
@@ -184,21 +184,21 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
                     continue;
                 }
 
-                const sonPuntosSuspensivos =
+                const isEllipsis =
                     char === "." &&
                     text[index - 1] === "." &&
                     text[index - 2] === ".";
 
-                if (sonPuntosSuspensivos) {
+                if (isEllipsis) {
                     continue;
                 }
 
-                const esNumeroDecimal =
+                const isDecimalNumber =
                     (char === "." || char === ",") &&
                     !Number.isNaN(Number(text[index - 1])) &&
                     !Number.isNaN(Number(text[index + 1]));
 
-                if (esNumeroDecimal) {
+                if (isDecimalNumber) {
                     continue;
                 }
 
@@ -214,12 +214,12 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
             }
         }
 
-        if (actualSubsMode === "karaokes") {
+        if (subtitleMode === "karaokes") {
             totalKaraokeLines++;
         }
     }
 
-    if (actualSubsMode === "karaokes" && totalKaraokeLines === 0) {
+    if (subtitleMode === "karaokes" && totalKaraokeLines === 0) {
         subtitleErrors.push({
             location: `Línea ${file.events.lines.length}`,
             error: "No se encontraron líneas de karaoke en español",
@@ -231,7 +231,7 @@ export function validateSubtitles(actualSubsMode: string, file: asu.ASSFile): Su
     return subtitleErrors;
 }
 
-export function validarInicio(text: string): string | null {
+export function validateDialogueStart(text: string): string | null {
     if (text.startsWith("... ")) {
         return "los tres puntos van pegados";
     }
@@ -249,7 +249,7 @@ export function validarInicio(text: string): string | null {
     return null;
 }
 
-export function validarDobleEspacio(text: string): string | null {
+export function validateDialogueMultipleSpaces(text: string): string | null {
     if (text.includes("  ")) {
         return "hay dos espacios seguidos";
     }

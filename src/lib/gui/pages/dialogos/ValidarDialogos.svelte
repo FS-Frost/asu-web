@@ -2,7 +2,13 @@
     import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
     import SubsArea from "./SubsArea.svelte";
-    import { SUBTITLE_MODES, validateSubtitles, type SubtitleMode, type SubtitleError, detectSubtitlesMode } from "$lib/validateSubtitles";
+    import {
+        SUBTITLE_MODES,
+        validateSubtitles,
+        type SubtitleMode,
+        type SubtitleError,
+        detectSubtitlesMode,
+    } from "$lib/validateSubtitles";
 
     const title: string = text.validarDialogos;
 
@@ -63,27 +69,56 @@
         </select>
     </div>
 
-    <input bind:this={inputFiles} type="file" accept=".ass" onchange={handleFiles} multiple />
+    <input
+        bind:this={inputFiles}
+        type="file"
+        accept=".ass"
+        onchange={handleFiles}
+        multiple
+    />
 
     {#if results.length > 0}
-        <div class="error-counter text-{totalErrors == 0 ? 'success' : 'failed'} mt-2">
+        <div
+            class="error-counter text-{totalErrors == 0
+                ? 'success'
+                : 'failed'} mt-2"
+        >
             <b>
                 Errores detectados: {totalErrors}
             </b>
         </div>
 
         {#if totalErrors === 0}
-            <img class="result-image" src="img/lucky-star-yay.gif" alt="Lucky Star" title="Lucky Star" />
+            <img
+                class="result-image"
+                src="img/lucky-star-yay.gif"
+                alt="Lucky Star"
+                title="Lucky Star"
+            />
         {:else if totalErrors > 10}
-            <img class="result-image" src="img/nichijou.webp" alt="Nichijou" title="Nichijou" />
+            <img
+                class="result-image"
+                src="img/nichijou.webp"
+                alt="Nichijou"
+                title="Nichijou"
+            />
         {:else}
-            <img class="result-image" src="img/under-arrest.gif" alt="You're Under Arrest" title="You're Under Arrest" />
+            <img
+                class="result-image"
+                src="img/under-arrest.gif"
+                alt="You're Under Arrest"
+                title="You're Under Arrest"
+            />
         {/if}
     {/if}
 
     {#each results as result}
         <div class="result">
-            <span class="name text-{result.errors.length == 0 ? 'success' : 'failed'} text-{result.subsType}">
+            <span
+                class="name text-{result.errors.length == 0
+                    ? 'success'
+                    : 'failed'} text-{result.subsType}"
+            >
                 {result.fileName}
             </span>
 
@@ -107,12 +142,14 @@
                         {error.location}: {error.error}.
 
                         {#if error.text != ""}
-                            <SubsArea text={error.text} rawMode={false}></SubsArea>
+                            <SubsArea text={error.text} rawMode={false}
+                            ></SubsArea>
                         {/if}
 
                         {#if error.ignoreRule != ""}
                             <span class="ignore-rule">
-                                Para ignorar, colocar <b>{error.ignoreRule}</b> en campo de efecto.
+                                Para ignorar, colocar <b>{error.ignoreRule}</b> en
+                                campo de efecto.
                             </span>
                         {/if}
                     </span>
