@@ -21,7 +21,7 @@
     "vite": "^5.4.14"
   },
   "dependencies": {
-    "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.6.0",
+    "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.7.0",
     "zod": "^3.24.1"
   }
 }

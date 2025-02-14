@@ -99,9 +99,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
             continue;
         }
 
-        if (
-            !file.styles.styles.some((style) => line.style === style.name)
-        ) {
+        if (!fileHasStyle(file, line.style)) {
             subtitleErrors.push({
                 location: `Línea ${lineNumber}`,
                 error: `Estilo no encontrado`,
@@ -140,23 +138,11 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         }
 
         if (!ignoreList.includes("ignorar-fin")) {
-            text = trimEnd(text, " ");
-            const validSufixes: string[] = [
-                ".",
-                ",",
-                ";",
-                "...",
-                "!",
-                "?",
-                ":",
-                "~",
-                "-...",
-            ];
-
-            if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
+            const errorMessage = validateDialogueEnd(text);
+            if (errorMessage != null) {
                 subtitleErrors.push({
                     location: `Línea ${lineNumber}`,
-                    error: `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`,
+                    error: errorMessage,
                     text: line.content,
                     ignoreRule: "ignorar-fin",
                 });
@@ -164,53 +150,14 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         }
 
         if (!ignoreList.includes("ignorar-puntuacion")) {
-            for (let index = 0; index < text.length; index++) {
-                const targetChars: string[] = [",", ";", "."];
-                const char = text[index];
-                if (!targetChars.includes(char)) {
-                    continue;
-                }
-
-                if (index + 1 >= text.length) {
-                    break;
-                }
-
-                let nextChar = text[index + 1];
-                if (nextChar === "\\" && text[index + 2] === "N") {
-                    nextChar = "\\N";
-                }
-
-                if (char === "." && nextChar == ".") {
-                    continue;
-                }
-
-                const isEllipsis =
-                    char === "." &&
-                    text[index - 1] === "." &&
-                    text[index - 2] === ".";
-
-                if (isEllipsis) {
-                    continue;
-                }
-
-                const isDecimalNumber =
-                    (char === "." || char === ",") &&
-                    !Number.isNaN(Number(text[index - 1])) &&
-                    !Number.isNaN(Number(text[index + 1]));
-
-                if (isDecimalNumber) {
-                    continue;
-                }
-
-                const allowedNextChars: string[] = [" ", "\\N"];
-                if (!allowedNextChars.includes(nextChar)) {
-                    subtitleErrors.push({
-                        location: `Línea ${lineNumber}`,
-                        error: "La coma (,) y el punto y coma (;) deben ser seguidos de un espacio o salto de línea",
-                        text: line.content,
-                        ignoreRule: "ignorar-puntuacion",
-                    });
-                }
+            const errorMessage = validateDialoguePunctuation(text);
+            if (errorMessage != null) {
+                subtitleErrors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: errorMessage,
+                    text: line.content,
+                    ignoreRule: "ignorar-puntuacion",
+                });
             }
         }
 
@@ -247,6 +194,79 @@ export function validateDialogueStart(text: string): string | null {
     }
 
     return null;
+}
+
+export function validateDialogueEnd(text: string): string | null {
+    text = trimEnd(text, " ");
+    const validSufixes: string[] = [
+        ".",
+        ",",
+        ";",
+        "...",
+        "!",
+        "?",
+        ":",
+        "~",
+        "-...",
+    ];
+
+    if (!validSufixes.some((sufix) => text.endsWith(sufix))) {
+        return `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`;
+    }
+
+    return null;
+}
+
+export function validateDialoguePunctuation(text: string): string | null {
+    for (let index = 0; index < text.length; index++) {
+        const targetChars: string[] = [",", ";", "."];
+        const char = text[index];
+        if (!targetChars.includes(char)) {
+            continue;
+        }
+
+        if (index + 1 >= text.length) {
+            break;
+        }
+
+        let nextChar = text[index + 1];
+        if (nextChar === "\\" && text[index + 2] === "N") {
+            nextChar = "\\N";
+        }
+
+        if (char === "." && nextChar == ".") {
+            continue;
+        }
+
+        const isEllipsis =
+            char === "." &&
+            text[index - 1] === "." &&
+            text[index - 2] === ".";
+
+        if (isEllipsis) {
+            continue;
+        }
+
+        const isDecimalNumber =
+            (char === "." || char === ",") &&
+            !Number.isNaN(Number(text[index - 1])) &&
+            !Number.isNaN(Number(text[index + 1]));
+
+        if (isDecimalNumber) {
+            continue;
+        }
+
+        const allowedNextChars: string[] = [" ", "\\N"];
+        if (!allowedNextChars.includes(nextChar)) {
+            return "La coma (,) y el punto y coma (;) deben ser seguidos de un espacio o salto de línea";
+        }
+    }
+
+    return null;
+}
+
+export function fileHasStyle(file: asu.ASSFile, styleName: string): boolean {
+    return file.styles.styles.some((style) => styleName === style.name);
 }
 
 export function validateDialogueMultipleSpaces(text: string): string | null {
