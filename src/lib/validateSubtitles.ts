@@ -19,31 +19,43 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         return subtitleErrors;
     }
 
-    const wrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
-    const expectedWrapStyle = "0";
-    if (wrapStyle !== expectedWrapStyle) {
+    const actualYCbCrMatrix = file.scriptInfo.properties.get("YCbCr Matrix") ?? "";
+    const expectedYCbCrMatrix = "None";
+    if (actualYCbCrMatrix !== expectedYCbCrMatrix) {
         subtitleErrors.push({
-            location: "Script info, wrap style",
-            error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${wrapStyle}"`,
-            text: wrapStyle,
+            location: "Script info, YCbCr Matrix",
+            error: `Se esperaba "${expectedYCbCrMatrix}", pero se encontró "${actualYCbCrMatrix}"`,
+            text: actualYCbCrMatrix,
             ignoreRule: "",
         });
     }
 
-    const scaledBorderAndShadow =
+    const actualWrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
+    const expectedWrapStyle = "0";
+    if (actualWrapStyle !== expectedWrapStyle) {
+        subtitleErrors.push({
+            location: "Script info, wrap style",
+            error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${actualWrapStyle}"`,
+            text: actualWrapStyle,
+            ignoreRule: "",
+        });
+    }
+
+    const actualScaledBorderAndShadow =
         file.scriptInfo.properties.get("ScaledBorderAndShadow") ?? "";
 
     const expectedScaledBorderAndShadow = "yes";
-    if (scaledBorderAndShadow !== expectedScaledBorderAndShadow) {
+    if (actualScaledBorderAndShadow !== expectedScaledBorderAndShadow) {
         subtitleErrors.push({
             location: "Script info, scaled border and shadow",
-            error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${scaledBorderAndShadow}"`,
-            text: scaledBorderAndShadow,
+            error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${actualScaledBorderAndShadow}"`,
+            text: actualScaledBorderAndShadow,
             ignoreRule: "",
         });
     }
 
     let totalKaraokeLines = 0;
+    const targetStyleKaraoke = "Español";
 
     for (let i = 0; i < file.events.lines.length; i++) {
         const line = file.events.lines[i];
@@ -72,7 +84,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
             continue;
         }
 
-        if (subtitleMode === "karaokes" && line.style !== "Español") {
+        if (subtitleMode === "karaokes" && line.style !== targetStyleKaraoke) {
             continue;
         }
 
@@ -169,7 +181,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
     if (subtitleMode === "karaokes" && totalKaraokeLines === 0) {
         subtitleErrors.push({
             location: `Línea ${file.events.lines.length}`,
-            error: "No se encontraron líneas de karaoke en español",
+            error: `No se encontraron líneas de karaoke con estilo "${targetStyleKaraoke}"`,
             text: "",
             ignoreRule: "",
         });
