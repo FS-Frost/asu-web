@@ -1,4 +1,5 @@
 export default {
+    verGitHub: "Ver en GitHub",
     acercaDe: "Acerca de Asu",
     aplicarAlpha: "Aplicar alpha",
     aplicarColor: "Aplicar color",

@@ -117,7 +117,7 @@
             <div class="navbar-end">
                 <a
                     class="navbar-item"
-                    title={`Versión ${generateShortSha(buildInfo.sha)}`}
+                    title={text.verGitHub}
                     href={generateCommitLink(
                         buildInfo.actor,
                         buildInfo.repo,
@@ -125,7 +125,7 @@
                     )}
                     target="_blank"
                 >
-                    Ver en GitHub
+                    {text.verGitHub}
                 </a>
             </div>
         {/if}
