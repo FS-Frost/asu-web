@@ -5,7 +5,7 @@
         BuildInfo,
         buildInfoStore,
         generateCommitLink,
-        repoName,
+        generateShortSha,
     } from "$lib/buildInfo";
     import text from "$lib/text";
 
@@ -113,15 +113,21 @@
             <NavItem text={text.acercaDe} page="acercaDe" />
         </div>
 
-        <div class="navbar-end">
-            <a
-                class="navbar-item"
-                title={`Versión ${buildInfo.sha.substring(0, 7)}`}
-                href={generateCommitLink(buildInfo)}
-                target="_blank"
-            >
-                Ver en GitHub
-            </a>
-        </div>
+        {#if buildInfo.sha != ""}
+            <div class="navbar-end">
+                <a
+                    class="navbar-item"
+                    title={`Versión ${generateShortSha(buildInfo.sha)}`}
+                    href={generateCommitLink(
+                        buildInfo.actor,
+                        buildInfo.repo,
+                        buildInfo.sha,
+                    )}
+                    target="_blank"
+                >
+                    Ver en GitHub
+                </a>
+            </div>
+        {/if}
     </div>
 </nav>

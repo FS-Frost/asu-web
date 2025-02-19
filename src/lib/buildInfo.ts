@@ -2,16 +2,15 @@ import { writable } from 'svelte/store';
 import { z } from "zod";
 
 export const BuildInfo = z.object({
-    "sha": z.string().default(""),
-    "ref": z.string().default(""),
-    "actor": z.string().default(""),
+    sha: z.string().default(""),
+    ref: z.string().default(""),
+    actor: z.string().default(""),
+    repo: z.string().default(""),
 });
 
 export type BuildInfo = z.infer<typeof BuildInfo>;
 
 export const buildInfoStore = writable<BuildInfo>(BuildInfo.parse({}));
-
-export const repoName: string = "asu-web";
 
 export async function getBuildInfo(): Promise<BuildInfo> {
     const defaultBuildInfo = BuildInfo.parse({});
@@ -33,14 +32,18 @@ export async function getBuildInfo(): Promise<BuildInfo> {
     return parseResult.data;
 }
 
-export function generateCommitLink(buildInfo: BuildInfo): string {
-    return `https://github.com/${buildInfo.actor}/${repoName}/commit/${buildInfo?.sha ?? ""}`;
+export function generateShortSha(sha: string): string {
+    return sha.substring(0, 7);
 }
 
-export function generateBranchLink(buildInfo: BuildInfo): string {
-    return `https://github.com/${buildInfo.actor}/${repoName}/tree/${buildInfo.ref ?? ""}`;
+export function generateCommitLink(actor: string, repo: string, sha: string): string {
+    return `https://github.com/${actor}/${repo}/commit/${sha}`;
 }
 
-export function generateActorLink(buildInfo: BuildInfo): string {
-    return `https://github.com/${buildInfo.actor ?? ""}`;
+export function generateBranchLink(actor: string, repo: string, ref: string): string {
+    return `https://github.com/${actor}/${repo}/tree/${ref}`;
+}
+
+export function generateActorLink(actor: string): string {
+    return `https://github.com/${actor}`;
 }
