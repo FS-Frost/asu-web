@@ -141,7 +141,7 @@
         <div class="field">
             <label class="checkbox">
                 <input type="checkbox" bind:checked={options.geminiEnabled} />
-                Habilitar validación con Google Gemini (lento)
+                Habilitar validación con Google Gemini (experimental)
             </label>
 
             {#if options.geminiEnabled}
