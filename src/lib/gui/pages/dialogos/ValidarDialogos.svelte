@@ -47,6 +47,7 @@
             saveOptions(options);
             const files = [...(inputFiles?.files ?? [])];
             totalErrors = 0;
+            totalWarnings = 0;
             results = [];
             loading = true;
 
