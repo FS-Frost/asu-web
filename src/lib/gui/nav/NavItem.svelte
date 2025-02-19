@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { activePage, type ActivePage } from "$lib/activePage";
+    import { activePageStore, type ActivePage } from "$lib/activePage";
     import { onMount } from "svelte";
 
     type Props = {
@@ -16,7 +16,7 @@
     }
 
     onMount(() => {
-        activePage.subscribe((newActivePage) => {
+        activePageStore.subscribe((newActivePage) => {
             isActive = page === newActivePage;
         });
     });
@@ -25,7 +25,8 @@
 <a
     class="navbar-item {isActive ? 'is-active' : ''}"
     href={generateLink(page)}
-    onclick={() => activePage.set(page)}
+    onclick={() => activePageStore.set(page)}
+    title={text}
 >
     {text}
 </a>

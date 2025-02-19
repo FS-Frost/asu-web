@@ -1,7 +1,25 @@
 <script lang="ts">
+    import {
+        BuildInfo,
+        buildInfoStore,
+        generateCommitLink,
+    } from "$lib/buildInfo";
     import text from "$lib/text";
+    import { onMount } from "svelte";
 
     const title: string = text.acercaDe;
+
+    let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
+
+    onMount(async () => {
+        buildInfoStore.subscribe((value) => {
+            if (value == null) {
+                return;
+            }
+
+            buildInfo = value;
+        });
+    });
 </script>
 
 <svelte:head>
@@ -10,6 +28,13 @@
 
 <div class="text-column">
     <h1>{title}</h1>
+
+    <span class="version">
+        <a href={generateCommitLink(buildInfo)} target="_blank">
+            Versión {buildInfo.ref}.{buildInfo.sha.substring(0, 7)} deplegada por
+            {buildInfo.actor}
+        </a>
+    </span>
 
     <div class="kagamin">
         <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />
@@ -96,5 +121,13 @@
     hr {
         margin-top: 1rem;
         margin-bottom: 1rem;
+    }
+
+    .version {
+        width: 100%;
+        text-align: center;
+        color: gray;
+        font-style: italic;
+        margin-bottom: 0.5rem;
     }
 </style>

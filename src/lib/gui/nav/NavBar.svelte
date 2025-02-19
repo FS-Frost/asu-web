@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import NavItem from "./NavItem.svelte";
-    import { BuildInfo, getBuildInfo } from "$lib/buildInfo";
+    import { BuildInfo, buildInfoStore } from "$lib/buildInfo";
     import text from "$lib/text";
 
     let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
@@ -19,7 +19,13 @@
     }
 
     onMount(async () => {
-        buildInfo = await getBuildInfo();
+        buildInfoStore.subscribe((value) => {
+            if (value == null) {
+                return;
+            }
+
+            buildInfo = value;
+        });
     });
 </script>
 
@@ -105,7 +111,7 @@
         <div class="navbar-end">
             <a
                 class="navbar-item"
-                title="Ver en GitHub"
+                title={`Versión ${buildInfo.sha.substring(0, 7)}`}
                 href={`https://github.com/FS-Frost/asu-web`}
                 target="_blank"
             >

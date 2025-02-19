@@ -12,9 +12,12 @@
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
 
-    function processLines(): void {
+    $effect(() => {
+        processLines(rawBaseLine, rawTargetLines);
+    });
+
+    function processLines(rawBaseLine: string, rawTargetLines: string): void {
         if (rawTargetLines.length == 0) {
-            alert("Pega las líneas desde Aegisub para continuar.");
             return;
         }
 
@@ -124,10 +127,6 @@
             ></textarea>
         </div>
     </div>
-
-    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
-        {text.copiarMovimiento}
-    </button>
 
     <div class="field mt-2">
         <label class="label" for="">

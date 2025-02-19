@@ -5,12 +5,12 @@
 
     const title: string = text.dividirSilabas;
 
+    let placeholder = $state<string>("");
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
 
     function processLines(): void {
         if (rawTargetLines.length == 0) {
-            alert("Pega las líneas desde Aegisub para continuar.");
             return;
         }
 
@@ -48,11 +48,14 @@
     }
 
     onMount(() => {
-        rawTargetLines += `Comment: 0,0:01:15.11,0:01:17.74,Romaji,,0,0,0,karaoke,dareka wo mamoreru watashi ni natte\n`;
+        placeholder += `Comment: 0,0:01:15.11,0:01:17.74,Romaji,,0,0,0,karaoke,dareka wo mamoreru watashi ni natte\n`;
 
-        rawTargetLines += `Comment: 0,0:01:17.85,0:01:20.44,Romaji,,0,0,0,karaoke,mune wo hatte itsuka omoerun da\n`;
+        placeholder += `Comment: 0,0:01:17.85,0:01:20.44,Romaji,,0,0,0,karaoke,mune wo hatte itsuka omoerun da\n`;
 
-        rawTargetLines += `Comment: 0,0:01:20.58,0:01:30.42,Romaji,,0,0,0,karaoke,ano hi kimi ni deaete yokatta\n`;
+        placeholder += `Comment: 0,0:01:20.58,0:01:30.42,Romaji,,0,0,0,karaoke,ano hi kimi ni deaete yokatta\n`;
+
+        rawTargetLines = placeholder;
+        processLines();
     });
 </script>
 
@@ -72,14 +75,11 @@
             <textarea
                 bind:value={rawTargetLines}
                 class="textarea"
-                placeholder="Pega tus líneas aquí"
+                {placeholder}
+                oninput={processLines}
             ></textarea>
         </div>
     </div>
-
-    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
-        {text.dividirSilabas}
-    </button>
 
     <div class="field mt-2">
         <label class="label" for="">

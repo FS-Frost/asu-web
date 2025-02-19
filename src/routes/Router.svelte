@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { activePage, type ActivePage, isPage } from "$lib/activePage";
+    import { activePageStore, type ActivePage, isPage } from "$lib/activePage";
     import { onMount } from "svelte";
     import CopiarMovimiento from "$lib/gui/pages/carteles/CopiarMovimiento.svelte";
     import AcercaDe from "$lib/gui/pages/AcercaDe.svelte";
@@ -14,7 +14,7 @@
     let page = $state<ActivePage | "">("");
 
     onMount(() => {
-        activePage.subscribe((newActivePage) => {
+        activePageStore.subscribe((newActivePage) => {
             if (newActivePage == null) {
                 return;
             }
@@ -25,7 +25,7 @@
         const urlParams = new URLSearchParams(location.search);
         const rawUrlPage = urlParams.get("pagina") ?? "";
         const urlPage: ActivePage = isPage(rawUrlPage) ? rawUrlPage : "inicio";
-        activePage.set(urlPage);
+        activePageStore.set(urlPage);
     });
 </script>
 

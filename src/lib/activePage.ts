@@ -18,7 +18,7 @@ export type ActivePage = typeof pagesKeys[number];
 
 export const defaultPage: ActivePage = "inicio";
 
-export const activePage = writable<ActivePage>();
+export const activePageStore = writable<ActivePage>(defaultPage);
 
 export function isPage(keyInput: string): keyInput is ActivePage {
     return pages.includes(keyInput);

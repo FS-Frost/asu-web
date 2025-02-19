@@ -1,6 +1,16 @@
 <script>
     import NavBar from "$lib/gui/nav/NavBar.svelte";
+    import { onMount } from "svelte";
     import "./styles.css";
+    import * as asu from "@fs-frost/asu";
+    import { buildInfoStore, getBuildInfo } from "$lib/buildInfo";
+
+    onMount(async () => {
+        window.asu = asu;
+        console.log("window.asu", window.asu);
+
+        buildInfoStore.set(await getBuildInfo());
+    });
 </script>
 
 <div class="app">

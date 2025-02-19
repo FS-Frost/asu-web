@@ -19,6 +19,7 @@
     let rawResultLines = $state<string>("");
     let syls = $state<Syl[]>([]);
     let splitSylIndex = $state<number>(0);
+    let errorMessage = $state<string>("");
 
     function processLines(): void {
         const line = asu.parseLine(rawKaraoke);
@@ -108,9 +109,15 @@
     }
 
     function parseKaraoke(): Syl[] {
+        previews = [];
+        rawResultLines = "";
         syls = [];
+        splitSylIndex = 0;
+        errorMessage = "";
+
         const line = asu.parseLine(rawKaraoke);
         if (line == null) {
+            errorMessage = `Línea de karaoke inválida. Se esperaba el formato: <${placeholderKaraoke}>.`;
             return [];
         }
 
@@ -165,12 +172,12 @@
         }
 
         splitSylIndex = Math.floor(syls.length / 2);
+        processLines();
         return syls;
     }
 
     onMount(() => {
         parseKaraoke();
-        processLines();
     });
 </script>
 
@@ -189,16 +196,17 @@
                 class="input"
                 type="text"
                 placeholder={placeholderKaraoke}
+                oninput={parseKaraoke}
             />
         </div>
     </div>
 
-    <button class="button is-link is-fullwidth" onclick={() => parseKaraoke()}>
-        Actualizar karaoke
-    </button>
+    {#if errorMessage != ""}
+        <p class="error">{errorMessage}</p>
+    {/if}
 
     <div class="mb-2">
-        <label class="label" for=""> Sílaba divisoria </label>
+        <label class="label mt-2" for=""> Sílaba divisoria </label>
         <div class="buttons">
             {#each syls as syl, index}
                 {#if syl.text.replaceAll(" ", "").length > 0}
@@ -248,5 +256,10 @@
 <style>
     section {
         width: 100%;
+    }
+
+    .error {
+        color: red;
+        font-weight: bold;
     }
 </style>

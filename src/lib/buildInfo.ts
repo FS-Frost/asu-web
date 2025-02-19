@@ -1,3 +1,4 @@
+import { writable } from 'svelte/store';
 import { z } from "zod";
 
 export const BuildInfo = z.object({
@@ -7,6 +8,8 @@ export const BuildInfo = z.object({
 });
 
 export type BuildInfo = z.infer<typeof BuildInfo>;
+
+export const buildInfoStore = writable<BuildInfo>(BuildInfo.parse({}));
 
 export async function getBuildInfo(): Promise<BuildInfo> {
     const defaultBuildInfo = BuildInfo.parse({});
@@ -26,4 +29,17 @@ export async function getBuildInfo(): Promise<BuildInfo> {
     }
 
     return parseResult.data;
+}
+
+
+export function generateCommitLink(buildInfo: BuildInfo): string {
+    return `https://github.com/${buildInfo.actor}/syncrajo-editor-plantillas/commit/${buildInfo?.sha ?? ""}`;
+}
+
+export function generateBranchLink(buildInfo: BuildInfo): string {
+    return `https://github.com/${buildInfo.actor}/syncrajo-editor-plantillas/tree/${buildInfo.ref ?? ""}`;
+}
+
+export function generateActorLink(buildInfo: BuildInfo): string {
+    return `https://github.com/${buildInfo.actor ?? ""}`;
 }

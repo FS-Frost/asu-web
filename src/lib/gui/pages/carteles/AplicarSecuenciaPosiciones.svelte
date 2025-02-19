@@ -10,9 +10,16 @@
     let rawResultLines = $state<string>("");
     let reverseLinesEnabled = $state<boolean>(false);
 
-    function processLines(): void {
+    $effect(() => {
+        processLines(rawBaseLines, rawTargetLines, reverseLinesEnabled);
+    });
+
+    function processLines(
+        rawBaseLines: string,
+        rawTargetLines: string,
+        reverseLinesEnabled: boolean,
+    ): void {
         if (rawTargetLines.length == 0) {
-            alert("Pega las líneas desde Aegisub para continuar.");
             return;
         }
 
@@ -233,10 +240,6 @@
             ></textarea>
         </div>
     </div>
-
-    <button class="button is-link is-fullwidth" onclick={() => processLines()}>
-        {text.aplicarSecuenciaPosiciones}
-    </button>
 
     <div class="field mt-2">
         <label class="label" for="">

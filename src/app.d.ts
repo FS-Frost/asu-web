@@ -1,3 +1,5 @@
+import * as asu from "@fs-frost/asu";
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
@@ -8,6 +10,10 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Window {
+		asu: typeof asu;
+	}
 }
 
-export {};
+export { };
