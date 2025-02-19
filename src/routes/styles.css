@@ -111,3 +111,9 @@ button:focus:not(:focus-visible) {
 h1 {
 	font-size: 2rem;
 }
+
+:root {
+	--bulma-danger-l: 60%;
+	--bulma-success-l: 35%;
+	--bulma-warning-l: 40%;
+}

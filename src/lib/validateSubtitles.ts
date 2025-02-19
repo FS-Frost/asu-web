@@ -1,9 +1,13 @@
+import { GoogleGenerativeAI, type GenerationConfig } from "@google/generative-ai";
 import * as asu from "@fs-frost/asu";
 import { trimEnd } from "./strings";
+import { z } from "zod";
 
 export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
 
-export type SubtitleMode = (typeof SUBTITLE_MODES)[number];
+export const SubtitleMode = z.enum(SUBTITLE_MODES);
+
+export type SubtitleMode = z.infer<typeof SubtitleMode>;
 
 export type SubtitleError = {
     location: string;
@@ -12,17 +16,30 @@ export type SubtitleError = {
     ignoreRule: string;
 };
 
-export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): SubtitleError[] {
-    const subtitleErrors: SubtitleError[] = [];
+type ValidationsOptions = {
+    geminiEnabled?: boolean;
+    geminiApiKey?: string;
+};
+
+type ValidationResult = {
+    errors: SubtitleError[],
+    warnings: SubtitleError[],
+};
+
+export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile, options?: ValidationsOptions): Promise<ValidationResult> {
+    const validationResult: ValidationResult = {
+        errors: [],
+        warnings: [],
+    };
 
     if (subtitleMode === "carteles") {
-        return subtitleErrors;
+        return validationResult;
     }
 
     const actualWrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
     const expectedWrapStyle = "0";
     if (actualWrapStyle !== expectedWrapStyle) {
-        subtitleErrors.push({
+        validationResult.errors.push({
             location: "Script info, wrap style",
             error: `Se esperaba "${expectedWrapStyle}", pero se encontró "${actualWrapStyle}"`,
             text: actualWrapStyle,
@@ -35,7 +52,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
 
     const expectedScaledBorderAndShadow = "yes";
     if (actualScaledBorderAndShadow !== expectedScaledBorderAndShadow) {
-        subtitleErrors.push({
+        validationResult.errors.push({
             location: "Script info, scaled border and shadow",
             error: `Se esperaba "${expectedScaledBorderAndShadow}", pero se encontró "${actualScaledBorderAndShadow}"`,
             text: actualScaledBorderAndShadow,
@@ -45,6 +62,8 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
 
     let totalKaraokeLines = 0;
     const targetStyleKaraoke = "Español";
+
+    let llmText = "";
 
     for (let i = 0; i < file.events.lines.length; i++) {
         const line = file.events.lines[i];
@@ -101,7 +120,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         }
 
         if (!fileHasStyle(file, line.style)) {
-            subtitleErrors.push({
+            validationResult.errors.push({
                 location: `Línea ${lineNumber}`,
                 error: `Estilo no encontrado`,
                 text: line.style,
@@ -114,10 +133,15 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
             items.filter((item) => item.name === "text"),
         );
 
+        if (options?.geminiEnabled && subtitleMode === "diálogos") {
+            const sanitizedText = sanitizeDialogue(text);
+            llmText += `\nLínea ${lineNumber}: ${sanitizedText}`;
+        }
+
         if (!ignoreList.includes("ignorar-inicio")) {
             const errorMessage = validateDialogueStart(text);
             if (errorMessage != null) {
-                subtitleErrors.push({
+                validationResult.errors.push({
                     location: `Línea ${lineNumber}`,
                     error: errorMessage,
                     text: line.content,
@@ -129,7 +153,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         if (!ignoreList.includes("ignorar-espacios")) {
             const errorMessage = validateDialogueMultipleSpaces(text);
             if (errorMessage != null) {
-                subtitleErrors.push({
+                validationResult.errors.push({
                     location: `Línea ${lineNumber}`,
                     error: errorMessage,
                     text: line.content,
@@ -141,7 +165,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         if (!ignoreList.includes("ignorar-fin")) {
             const errorMessage = validateDialogueEnd(text);
             if (errorMessage != null) {
-                subtitleErrors.push({
+                validationResult.errors.push({
                     location: `Línea ${lineNumber}`,
                     error: errorMessage,
                     text: line.content,
@@ -153,7 +177,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         if (!ignoreList.includes("ignorar-puntuacion")) {
             const errorMessage = validateDialoguePunctuation(text);
             if (errorMessage != null) {
-                subtitleErrors.push({
+                validationResult.errors.push({
                     location: `Línea ${lineNumber}`,
                     error: errorMessage,
                     text: line.content,
@@ -167,8 +191,30 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         }
     }
 
+    if (options?.geminiEnabled && options?.geminiApiKey !== "" && subtitleMode === "diálogos") {
+        const geminiApiKey = options.geminiApiKey ?? "";
+        const result = await validateSubtitleWithGemini(llmText, geminiApiKey);
+        if (result != null) {
+            for (const lineResult of result.errores) {
+                const line = file.events.lines[lineResult.numeroLinea - 1];
+
+                let errorMessage = lineResult.mensajeError;
+                if (errorMessage.endsWith(".")) {
+                    errorMessage.substring(0, errorMessage.length - 2);
+                }
+
+                validationResult.warnings.push({
+                    location: `Línea ${lineResult.numeroLinea}`,
+                    error: errorMessage,
+                    text: line.content,
+                    ignoreRule: "ignorar-llm",
+                });
+            }
+        }
+    }
+
     if (subtitleMode === "karaokes" && totalKaraokeLines === 0) {
-        subtitleErrors.push({
+        validationResult.errors.push({
             location: `Línea ${file.events.lines.length}`,
             error: `No se encontraron líneas de karaoke con estilo "${targetStyleKaraoke}"`,
             text: "",
@@ -176,7 +222,7 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         });
     }
 
-    return subtitleErrors;
+    return validationResult;
 }
 
 export function validateDialogueStart(text: string): string | null {
@@ -298,4 +344,106 @@ export function detectSubtitlesMode(fileName: string, userSubsMode: SubtitleMode
     }
 
     return "diálogos";
+}
+
+const GeminiValidation = z.object({
+    errores: z.object({
+        numeroLinea: z.number().default(0),
+        mensajeError: z.string().default(""),
+    }).array(),
+});
+
+type GeminiValidation = z.infer<typeof GeminiValidation>;
+
+export async function validateSubtitleWithGemini(input: string, geminiApiKey: string): Promise<GeminiValidation | null> {
+    try {
+        const storeResponseEnabled = false;
+        if (storeResponseEnabled) {
+            const rawStoredResponse = localStorage.getItem("geminiValidation") ?? "{}";
+            if (rawStoredResponse !== "{}") {
+                const storedResponse = JSON.parse(localStorage.getItem("geminiValidation") ?? "{}");
+                return GeminiValidation.parse(storedResponse);
+            }
+        }
+
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
+
+        const systemInstruction = `
+            Valida todos los textos que recibas y retorna un JSON con la estructura:
+            {
+                "errores": [
+                    "numeroLinea": 1,
+                    "mensajeError": "descripción del error"
+                ]
+            }
+            Considera '\N' como un espacio ' '.
+            Ignora los espacios consecutivos, son son errores.
+            Retorna sólo el JSON como texto plano.
+        `;
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            systemInstruction: systemInstruction,
+        });
+
+        const generationConfig: GenerationConfig = {
+            temperature: 1,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 8192,
+            responseMimeType: "text/plain",
+        };
+
+        const chatSession = model.startChat({
+            generationConfig: generationConfig,
+            history: [],
+        });
+
+        const result = await chatSession.sendMessage(input);
+        let rawResponse = result.response.text();
+        rawResponse = rawResponse.replaceAll("```json", "");
+        rawResponse = rawResponse.replaceAll("```", "");
+        const geminiValidation = GeminiValidation.parse(JSON.parse(rawResponse));
+
+        if (storeResponseEnabled) {
+            localStorage.setItem("geminiValidation", JSON.stringify(geminiValidation));
+        }
+
+        return geminiValidation;
+    } catch (error) {
+        console.error("error al validar subs con gemini", error);
+        return null;
+    }
+}
+
+export function sanitizeDialogue(text: string): string {
+    let newText = "";
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar1 = text[i + 1] ?? "";
+        const nextChar2 = text[i + 2] ?? "";
+        const nextCharNeg1 = text[i - 1] ?? "";
+
+        if (char === "\\" && nextChar1 === "N") {
+            i++;
+
+            // "\N "
+            if (nextChar2 === " ") {
+                continue;
+            }
+
+            // " \N"
+            if (nextCharNeg1 === " ") {
+                continue;
+            }
+
+            // "\N"
+            newText += " ";
+            continue;
+        }
+
+        newText += char;
+    }
+
+    return newText;
 }

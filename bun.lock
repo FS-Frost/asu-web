@@ -5,6 +5,7 @@
       "name": "asu-web",
       "dependencies": {
         "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.7.0",
+        "@google/generative-ai": "^0.21.0",
         "zod": "^3.24.1",
       },
       "devDependencies": {
@@ -70,6 +71,8 @@
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.21.5", "", { "os": "win32", "cpu": "x64" }, "sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw=="],
 
     "@fs-frost/asu": ["@jsr/fs-frost__asu@1.7.0", "https://npm.jsr.io/~/11/@jsr/fs-frost__asu/1.7.0.tgz", { "dependencies": { "magic-regexp": "^0.7.0", "zod": "^3.24.2" } }, "sha512-jxX2Z0ymJDlCB0jhXUzk1I6x2ZtkRSFyIB0bRfD7yNAmrLYoOsZaUXxqhswFZxMfskg/lb6g/UDuRq68LT8+vg=="],
+
+    "@google/generative-ai": ["@google/generative-ai@0.21.0", "", {}, "sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.8", "", { "dependencies": { "@jridgewell/set-array": "^1.2.1", "@jridgewell/sourcemap-codec": "^1.4.10", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA=="],
 

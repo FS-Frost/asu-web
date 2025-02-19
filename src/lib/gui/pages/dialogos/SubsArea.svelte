@@ -3,11 +3,12 @@
     import { onMount, tick } from "svelte";
 
     type Props = {
+        kind: "error" | "warning";
         text: string;
         rawMode: boolean;
     };
 
-    let { text, rawMode }: Props = $props();
+    let { kind, text, rawMode }: Props = $props();
 
     let visibleText = $state<string>(text);
     let rows = $state<number>(1);
@@ -56,7 +57,7 @@
 <div class="area">
     <textarea
         bind:this={textArea}
-        class="textarea is-danger"
+        class="textarea {kind === 'error' ? 'is-danger' : 'is-warning'}"
         value={visibleText}
         readonly
         {rows}

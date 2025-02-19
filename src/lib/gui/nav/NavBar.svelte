@@ -4,6 +4,7 @@
     import {
         BuildInfo,
         buildInfoStore,
+        generateBranchLink,
         generateCommitLink,
         generateShortSha,
     } from "$lib/buildInfo";
@@ -118,10 +119,10 @@
                 <a
                     class="navbar-item"
                     title={text.verGitHub}
-                    href={generateCommitLink(
+                    href={generateBranchLink(
                         buildInfo.actor,
                         buildInfo.repo,
-                        buildInfo.sha,
+                        buildInfo.ref,
                     )}
                     target="_blank"
                 >
