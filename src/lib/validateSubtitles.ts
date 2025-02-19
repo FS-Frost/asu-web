@@ -19,17 +19,6 @@ export function validateSubtitles(subtitleMode: string, file: asu.ASSFile): Subt
         return subtitleErrors;
     }
 
-    const actualYCbCrMatrix = file.scriptInfo.properties.get("YCbCr Matrix") ?? "";
-    const expectedYCbCrMatrix = "None";
-    if (actualYCbCrMatrix !== expectedYCbCrMatrix) {
-        subtitleErrors.push({
-            location: "Script info, YCbCr Matrix",
-            error: `Se esperaba "${expectedYCbCrMatrix}", pero se encontró "${actualYCbCrMatrix}"`,
-            text: actualYCbCrMatrix,
-            ignoreRule: "",
-        });
-    }
-
     const actualWrapStyle = file.scriptInfo.properties.get("WrapStyle") ?? "";
     const expectedWrapStyle = "0";
     if (actualWrapStyle !== expectedWrapStyle) {
