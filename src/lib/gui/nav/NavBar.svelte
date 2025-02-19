@@ -1,7 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import NavItem from "./NavItem.svelte";
-    import { BuildInfo, buildInfoStore } from "$lib/buildInfo";
+    import {
+        BuildInfo,
+        buildInfoStore,
+        generateCommitLink,
+        repoName,
+    } from "$lib/buildInfo";
     import text from "$lib/text";
 
     let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
@@ -112,7 +117,7 @@
             <a
                 class="navbar-item"
                 title={`Versión ${buildInfo.sha.substring(0, 7)}`}
-                href={`https://github.com/FS-Frost/asu-web`}
+                href={generateCommitLink(buildInfo)}
                 target="_blank"
             >
                 Ver en GitHub

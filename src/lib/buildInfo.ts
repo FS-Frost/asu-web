@@ -11,6 +11,8 @@ export type BuildInfo = z.infer<typeof BuildInfo>;
 
 export const buildInfoStore = writable<BuildInfo>(BuildInfo.parse({}));
 
+export const repoName: string = "asu-web";
+
 export async function getBuildInfo(): Promise<BuildInfo> {
     const defaultBuildInfo = BuildInfo.parse({});
     const response = await fetch("build-info.json");
@@ -31,13 +33,12 @@ export async function getBuildInfo(): Promise<BuildInfo> {
     return parseResult.data;
 }
 
-
 export function generateCommitLink(buildInfo: BuildInfo): string {
-    return `https://github.com/${buildInfo.actor}/syncrajo-editor-plantillas/commit/${buildInfo?.sha ?? ""}`;
+    return `https://github.com/${buildInfo.actor}/${repoName}/commit/${buildInfo?.sha ?? ""}`;
 }
 
 export function generateBranchLink(buildInfo: BuildInfo): string {
-    return `https://github.com/${buildInfo.actor}/syncrajo-editor-plantillas/tree/${buildInfo.ref ?? ""}`;
+    return `https://github.com/${buildInfo.actor}/${repoName}/tree/${buildInfo.ref ?? ""}`;
 }
 
 export function generateActorLink(buildInfo: BuildInfo): string {
