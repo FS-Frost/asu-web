@@ -15,17 +15,19 @@
         ? 'has-text-danger'
         : 'has-text-warning'}"
 >
-    {kind === "error" ? "Error" : "Advertencia"}:
-    {subtitleError.location}:
-    {subtitleError.error + (subtitleError.error.endsWith(".") ? "" : ".")}
+    <p class="m-1">
+        {kind === "error" ? "Error" : "Advertencia"}:
+        {subtitleError.location}:
+        {subtitleError.error + (subtitleError.error.endsWith(".") ? "" : ".")}
+    </p>
 
     {#if subtitleError.text != ""}
         <SubsArea {kind} text={subtitleError.text} rawMode={false}></SubsArea>
     {/if}
 
     {#if subtitleError.ignoreRule != ""}
-        <span class="ignore-rule">
+        <p class="ignore-rule m-1">
             Para ignorar, colocar <b>{subtitleError.ignoreRule}</b> en campo de efecto.
-        </span>
+        </p>
     {/if}
 </span>

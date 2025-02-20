@@ -194,22 +194,23 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
     if (options?.geminiEnabled && options?.geminiApiKey !== "" && subtitleMode === "diálogos") {
         const geminiApiKey = options.geminiApiKey ?? "";
         const result = await validateSubtitleWithGemini(llmText, geminiApiKey);
-        if (result != null) {
-            for (const lineResult of result.errores) {
-                const line = file.events.lines[lineResult.numeroLinea - 1];
-
-                let errorMessage = lineResult.mensajeError;
-                if (errorMessage.endsWith(".")) {
-                    errorMessage.substring(0, errorMessage.length - 2);
-                }
-
-                validationResult.warnings.push({
-                    location: `Línea ${lineResult.numeroLinea}`,
-                    error: errorMessage,
-                    text: line.content,
-                    ignoreRule: "ignorar-llm",
-                });
+        for (const lineResult of result.errores) {
+            let line = file.events.lines[lineResult.numeroLinea - 1];
+            if (line == null) {
+                line = asu.generateDefaultLine();
             }
+
+            let errorMessage = lineResult.mensajeError;
+            if (errorMessage.endsWith(".")) {
+                errorMessage.substring(0, errorMessage.length - 2);
+            }
+
+            validationResult.warnings.push({
+                location: `Línea ${lineResult.numeroLinea}`,
+                error: errorMessage,
+                text: line.content,
+                ignoreRule: "ignorar-llm",
+            });
         }
     }
 
@@ -355,7 +356,7 @@ const GeminiValidation = z.object({
 
 type GeminiValidation = z.infer<typeof GeminiValidation>;
 
-export async function validateSubtitleWithGemini(input: string, geminiApiKey: string): Promise<GeminiValidation | null> {
+export async function validateSubtitleWithGemini(input: string, geminiApiKey: string): Promise<GeminiValidation> {
     try {
         const storeResponseEnabled = false;
         if (storeResponseEnabled) {
@@ -412,7 +413,22 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
         return geminiValidation;
     } catch (error) {
         console.error("error al validar subs con gemini", error);
-        return null;
+
+        let errorMessage = `${error}`;
+        if (errorMessage.includes("API key not valid")) {
+            errorMessage = "API KEY inválida.";
+        }
+
+        const geminiValidation: GeminiValidation = {
+            errores: [
+                {
+                    numeroLinea: 0,
+                    mensajeError: `Error al validar subtítulos con Google Gemini: ${errorMessage}`,
+                },
+            ],
+        };
+
+        return geminiValidation;
     }
 }
 
