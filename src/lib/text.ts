@@ -12,4 +12,10 @@ export default {
     resultado: "Resultado",
     subtitulos: "Subtítulos",
     validarDialogos: "Validar diálogos",
+    validateWithGemini: "Validar con Google Gemini",
+    validateLineStyleExists: "Validar que los estilos existan",
+    validateTextStart: "Validar inicio de los textos",
+    validateTextEnd: "Validar fin de los textos",
+    validateTextSpaces: "Validar espacios múltiples",
+    validateTextPunctuation: "Validar puntuación",
 };

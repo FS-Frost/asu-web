@@ -5,6 +5,11 @@ export const Options = z.object({
     userSubsMode: SubtitleMode.default("automático"),
     geminiEnabled: z.boolean().default(false),
     geminiApiKey: z.string().default(""),
+    validateLineStyleExists: z.boolean().default(true),
+    validateTextStart: z.boolean().default(true),
+    validateTextEnd: z.boolean().default(true),
+    validateTextSpaces: z.boolean().default(true),
+    validateTextPunctuation: z.boolean().default(true),
 });
 
 export type Options = z.infer<typeof Options>;

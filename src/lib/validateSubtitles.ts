@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, type GenerationConfig } from "@google/generative-ai
 import * as asu from "@fs-frost/asu";
 import { trimEnd } from "./strings";
 import { z } from "zod";
+import type { Options } from "./gui/pages/dialogos/validarDialogosOptions";
 
 export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
 
@@ -16,17 +17,12 @@ export type SubtitleError = {
     ignoreRule: string;
 };
 
-type ValidationsOptions = {
-    geminiEnabled?: boolean;
-    geminiApiKey?: string;
-};
-
 type ValidationResult = {
     errors: SubtitleError[],
     warnings: SubtitleError[],
 };
 
-export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile, options?: ValidationsOptions): Promise<ValidationResult> {
+export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile, options: Options): Promise<ValidationResult> {
     const validationResult: ValidationResult = {
         errors: [],
         warnings: [],
@@ -60,9 +56,8 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
         });
     }
 
-    let totalKaraokeLines = 0;
     const targetStyleKaraoke = "Español";
-
+    let totalKaraokeLines = 0;
     let llmText = "";
 
     for (let i = 0; i < file.events.lines.length; i++) {
@@ -70,7 +65,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
         const lineNumber = i + 1;
 
         if (
-            subtitleMode !== "karaokes" &&
+            subtitleMode === "automático" &&
             line.effect.includes("template syl")
         ) {
             console.info(
@@ -119,7 +114,11 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
             continue;
         }
 
-        if (!fileHasStyle(file, line.style)) {
+        if (
+            options.validateLineStyleExists &&
+            !ignoreList.includes("ignorar-estilo") &&
+            !fileHasStyle(file, line.style)
+        ) {
             validationResult.errors.push({
                 location: `Línea ${lineNumber}`,
                 error: `Estilo no encontrado`,
@@ -133,12 +132,12 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
             items.filter((item) => item.name === "text"),
         );
 
-        if (options?.geminiEnabled && subtitleMode === "diálogos") {
+        if (options.geminiEnabled && subtitleMode === "diálogos") {
             const sanitizedText = sanitizeDialogue(text);
             llmText += `\nLínea ${lineNumber}: ${sanitizedText}`;
         }
 
-        if (!ignoreList.includes("ignorar-inicio")) {
+        if (options.validateTextStart && !ignoreList.includes("ignorar-inicio")) {
             const errorMessage = validateDialogueStart(text);
             if (errorMessage != null) {
                 validationResult.errors.push({
@@ -150,7 +149,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
             }
         }
 
-        if (!ignoreList.includes("ignorar-espacios")) {
+        if (options.validateTextSpaces && !ignoreList.includes("ignorar-espacios")) {
             const errorMessage = validateDialogueMultipleSpaces(text);
             if (errorMessage != null) {
                 validationResult.errors.push({
@@ -162,7 +161,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
             }
         }
 
-        if (!ignoreList.includes("ignorar-fin")) {
+        if (options.validateTextEnd && !ignoreList.includes("ignorar-fin")) {
             const errorMessage = validateDialogueEnd(text);
             if (errorMessage != null) {
                 validationResult.errors.push({
@@ -174,7 +173,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
             }
         }
 
-        if (!ignoreList.includes("ignorar-puntuacion")) {
+        if (options.validateTextPunctuation && !ignoreList.includes("ignorar-puntuacion")) {
             const errorMessage = validateDialoguePunctuation(text);
             if (errorMessage != null) {
                 validationResult.errors.push({
@@ -191,9 +190,12 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
         }
     }
 
-    if (options?.geminiEnabled && options?.geminiApiKey !== "" && subtitleMode === "diálogos") {
-        const geminiApiKey = options.geminiApiKey ?? "";
-        const result = await validateSubtitleWithGemini(llmText, geminiApiKey);
+    if (
+        options.geminiEnabled &&
+        options.geminiApiKey !== "" &&
+        subtitleMode === "diálogos"
+    ) {
+        const result = await validateSubtitleWithGemini(llmText, options.geminiApiKey);
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
             if (line == null) {

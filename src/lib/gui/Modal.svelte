@@ -85,3 +85,9 @@
         </footer>
     </div>
 </div>
+
+<style>
+    button {
+        width: 100%;
+    }
+</style>

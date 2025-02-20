@@ -1,7 +1,8 @@
 <script lang="ts">
     import Modal from "$lib/gui/Modal.svelte";
+    import text from "$lib/text";
     import { SUBTITLE_MODES } from "$lib/validateSubtitles";
-    import { saveOptions, type Options } from "./validarDialogosOptions";
+    import { Options, saveOptions } from "./validarDialogosOptions";
 
     type Props = {
         options: Options;
@@ -18,6 +19,15 @@
     export function close(): void {
         modal?.close();
     }
+
+    function resetSettings(): void {
+        const doContinue = confirm("¿Reiniciar configuración?");
+        if (!doContinue) {
+            return;
+        }
+
+        options = Options.parse({});
+    }
 </script>
 
 <Modal
@@ -26,6 +36,13 @@
     cancelButtonText="Volver"
     onClose={() => saveOptions(options)}
 >
+    <button
+        class="button is-danger is-outlined is-fullwidth mb-2"
+        onclick={resetSettings}
+    >
+        Reiniciar configuración
+    </button>
+
     <div class="select is-fullwidth mb-2">
         <select bind:value={options.userSubsMode}>
             {#each SUBTITLE_MODES as mode}
@@ -37,7 +54,7 @@
     <div class="field">
         <label class="checkbox">
             <input type="checkbox" bind:checked={options.geminiEnabled} />
-            Habilitar validación con Google Gemini (experimental)
+            {text.validateWithGemini}
         </label>
 
         {#if options.geminiEnabled}
@@ -64,5 +81,46 @@
                 debido a su tendencia a tener falsos positivos.
             </p>
         {/if}
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input
+                type="checkbox"
+                bind:checked={options.validateLineStyleExists}
+            />
+            {text.validateLineStyleExists}
+        </label>
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input type="checkbox" bind:checked={options.validateTextStart} />
+            {text.validateTextStart}
+        </label>
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input type="checkbox" bind:checked={options.validateTextEnd} />
+            {text.validateTextEnd}
+        </label>
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input type="checkbox" bind:checked={options.validateTextSpaces} />
+            {text.validateTextSpaces}
+        </label>
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input
+                type="checkbox"
+                bind:checked={options.validateTextPunctuation}
+            />
+            {text.validateTextPunctuation}
+        </label>
     </div>
 </Modal>

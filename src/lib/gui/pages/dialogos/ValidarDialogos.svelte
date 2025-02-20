@@ -8,7 +8,7 @@
         detectSubtitlesMode,
     } from "$lib/validateSubtitles";
     import { loadOptions, Options } from "./validarDialogosOptions";
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import FileError from "./FileError.svelte";
     import ModalOptions from "./ModalOptions.svelte";
 
@@ -72,10 +72,7 @@
                 const validationResult = await validateSubtitles(
                     actualSubsMode,
                     assFile,
-                    {
-                        geminiEnabled: options.geminiEnabled,
-                        geminiApiKey: options.geminiApiKey,
-                    },
+                    options,
                 );
 
                 totalErrors += validationResult.errors.length;
@@ -98,6 +95,7 @@
             }
 
             loading = false;
+            await scrollToResults();
         }
     }
 
@@ -111,6 +109,18 @@
         }
 
         return "has-text-success";
+    }
+
+    async function scrollToResults(): Promise<void> {
+        await tick();
+        const element = document.querySelector(".result-info");
+        if (element == null) {
+            return;
+        }
+
+        element.scrollIntoView({
+            behavior: "smooth",
+        });
     }
 
     onMount(() => {
@@ -127,7 +137,7 @@
 
     <div class="options mb-4">
         <button
-            class="button is-link mb-2 btn-settings"
+            class="button is-link mb-2 btn-settings is-fullwidth"
             onclick={() => modalOptions?.open()}
         >
             Configuración
@@ -139,12 +149,36 @@
             </span>
 
             {#if options.geminiEnabled}
-                <span class="tag is-dark"> Google Gemini habilitado </span>
+                <span class="tag is-dark"> {text.validateWithGemini}</span>
+            {/if}
+
+            {#if options.validateLineStyleExists}
+                <span class="tag is-dark">
+                    {text.validateLineStyleExists}
+                </span>
+            {/if}
+
+            {#if options.validateTextStart}
+                <span class="tag is-dark"> {text.validateTextStart} </span>
+            {/if}
+
+            {#if options.validateTextEnd}
+                <span class="tag is-dark"> {text.validateTextEnd} </span>
+            {/if}
+
+            {#if options.validateTextSpaces}
+                <span class="tag is-dark"> {text.validateTextSpaces} </span>
+            {/if}
+
+            {#if options.validateTextPunctuation}
+                <span class="tag is-dark">
+                    {text.validateTextPunctuation}
+                </span>
             {/if}
         </div>
     </div>
 
-    <div class="file is-fullwidth">
+    <div class="file is-fullwidth mb-2">
         <label class="file-label">
             <input
                 class="file-input"
@@ -188,7 +222,7 @@
                     ? 'has-text-success'
                     : 'has-text-danger'}"
             >
-                Errores: {totalErrors}
+                ERRORES: {totalErrors}
             </div>
 
             <div class="image-container">
@@ -228,7 +262,7 @@
                     ? 'has-text-success'
                     : 'has-text-warning'}"
             >
-                Advertencias: {totalWarnings}
+                ADVERTENCIAS: {totalWarnings}
             </div>
         </div>
 
@@ -259,7 +293,7 @@
                 {#if result.errors.length > 0}
                     <div class="errors-list">
                         <button
-                            class="button has-text-danger"
+                            class="button is-danger is-outlined"
                             onclick={() =>
                                 (result.errorsVisible = !result.errorsVisible)}
                         >
@@ -284,7 +318,7 @@
                 {#if result.warnings.length > 0}
                     <div class="warnings-list">
                         <button
-                            class="button has-text-warning"
+                            class="button is-warning is-outlined"
                             onclick={() =>
                                 (result.warningsVisible =
                                     !result.warningsVisible)}
@@ -352,6 +386,10 @@
         margin: 0;
     }
 
+    .file-cta {
+        width: 100%;
+    }
+
     .result-image {
         height: 16rem;
     }
@@ -394,7 +432,13 @@
 
     .options {
         display: flex;
-        gap: 1rem;
+        flex-direction: column;
+    }
+
+    .options-info {
+        gap: 0.5rem;
+        display: grid;
+        grid-template-columns: auto auto auto;
     }
 
     .btn-settings {
