@@ -51,7 +51,7 @@
         </select>
     </div>
 
-    <div class="field">
+    <div class="field boxed">
         <label class="checkbox">
             <input type="checkbox" bind:checked={options.geminiEnabled} />
             {text.validateWithGemini}
@@ -83,44 +83,52 @@
         {/if}
     </div>
 
-    <div class="field">
-        <label class="checkbox">
-            <input
-                type="checkbox"
-                bind:checked={options.validateLineStyleExists}
-            />
-            {text.validateLineStyleExists}
-        </label>
-    </div>
+    <div class="boxed">
+        <div class="field">
+            <label class="checkbox">
+                <input
+                    type="checkbox"
+                    bind:checked={options.validateLineStyleExists}
+                />
+                {text.validateLineStyleExists}
+            </label>
+        </div>
 
-    <div class="field">
-        <label class="checkbox">
-            <input type="checkbox" bind:checked={options.validateTextStart} />
-            {text.validateTextStart}
-        </label>
-    </div>
+        <div class="field">
+            <label class="checkbox">
+                <input
+                    type="checkbox"
+                    bind:checked={options.validateTextStart}
+                />
+                {text.validateTextStart}
+            </label>
+        </div>
 
-    <div class="field">
-        <label class="checkbox">
-            <input type="checkbox" bind:checked={options.validateTextEnd} />
-            {text.validateTextEnd}
-        </label>
-    </div>
+        <div class="field">
+            <label class="checkbox">
+                <input type="checkbox" bind:checked={options.validateTextEnd} />
+                {text.validateTextEnd}
+            </label>
+        </div>
 
-    <div class="field">
-        <label class="checkbox">
-            <input type="checkbox" bind:checked={options.validateTextSpaces} />
-            {text.validateTextSpaces}
-        </label>
-    </div>
+        <div class="field">
+            <label class="checkbox">
+                <input
+                    type="checkbox"
+                    bind:checked={options.validateTextSpaces}
+                />
+                {text.validateTextSpaces}
+            </label>
+        </div>
 
-    <div class="field">
-        <label class="checkbox">
-            <input
-                type="checkbox"
-                bind:checked={options.validateTextPunctuation}
-            />
-            {text.validateTextPunctuation}
-        </label>
+        <div class="field">
+            <label class="checkbox">
+                <input
+                    type="checkbox"
+                    bind:checked={options.validateTextPunctuation}
+                />
+                {text.validateTextPunctuation}
+            </label>
+        </div>
     </div>
 </Modal>

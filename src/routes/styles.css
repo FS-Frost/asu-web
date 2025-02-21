@@ -117,3 +117,15 @@ h1 {
 	--bulma-success-l: 35%;
 	--bulma-warning-l: 40%;
 }
+
+hr {
+	background-color: #e3e3e3;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+.boxed {
+	border: 1px solid #dbdbdb;
+	border-radius: 0.3rem;
+	padding: 0.5rem;
+}

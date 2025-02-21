@@ -135,7 +135,7 @@
 <section>
     <h1>{title}</h1>
 
-    <div class="options mb-4">
+    <div class="options boxed mb-4">
         <button
             class="button is-link mb-2 btn-settings is-fullwidth"
             onclick={() => modalOptions?.open()}

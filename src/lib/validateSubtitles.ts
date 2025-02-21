@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type GenerationConfig } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, type GenerationConfig } from "@google/generative-ai";
 import * as asu from "@fs-frost/asu";
 import { trimEnd } from "./strings";
 import { z } from "zod";
@@ -369,22 +369,15 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
             }
         }
 
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
-
         const systemInstruction = `
-            Valida todos los textos que recibas y retorna un JSON con la estructura:
-            {
-                "errores": [
-                    "numeroLinea": 1,
-                    "mensajeError": "descripción del error y consejor de cómo corregirlo"
-                ]
-            }
+            Valida todos los textos que recibas.
             Considera '\N' como un espacio ' '.
             Ignora los espacios consecutivos, no son errores.
             Considera como errores sólo las faltas ortográficas graves.
             Frases vulgares, de uso poco común o muletillas están bien.
-            Retorna sólo el JSON como texto plano.
         `;
+
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
 
         const model = genAI.getGenerativeModel({
             model: "gemini-2.0-flash",
@@ -396,7 +389,31 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
             topP: 0.95,
             topK: 40,
             maxOutputTokens: 8192,
-            responseMimeType: "text/plain",
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: SchemaType.OBJECT,
+                required: ["errores"],
+                properties: {
+                    errores: {
+                        type: SchemaType.ARRAY,
+                        items: {
+                            type: SchemaType.OBJECT,
+                            required: ["numeroLinea", "mensajeError"],
+                            properties: {
+                                numeroLinea: {
+                                    type: SchemaType.INTEGER,
+                                    description: "número de la línea con error",
+                                    example: 2,
+                                },
+                                mensajeError: {
+                                    type: SchemaType.STRING,
+                                    description: "descripción del error y consejo de cómo corregirlo",
+                                },
+                            },
+                        },
+                    },
+                },
+            }
         };
 
         const chatSession = model.startChat({
@@ -405,9 +422,7 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
         });
 
         const result = await chatSession.sendMessage(input);
-        let rawResponse = result.response.text();
-        rawResponse = rawResponse.replaceAll("```json", "");
-        rawResponse = rawResponse.replaceAll("```", "");
+        const rawResponse = result.response.text();
         const geminiValidation = GeminiValidation.parse(JSON.parse(rawResponse));
 
         if (storeResponseEnabled) {

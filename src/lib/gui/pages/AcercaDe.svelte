@@ -30,6 +30,10 @@
 <div class="text-column">
     <h1>{title}</h1>
 
+    <div class="kagamin">
+        <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />
+    </div>
+
     {#if buildInfo.sha != ""}
         <span class="version">
             <a
@@ -40,18 +44,12 @@
                 )}
                 target="_blank"
             >
-                Versión {buildInfo.ref}.{generateShortSha(buildInfo.sha)} desplegada
-                por
-                {buildInfo.actor}
+                Versión {buildInfo.ref}.{generateShortSha(buildInfo.sha)}
             </a>
         </span>
     {/if}
 
-    <div class="kagamin">
-        <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />
-    </div>
-
-    <p class="mt-2">
+    <p>
         Asu es una herramienta para automatizar el procesamiento de subtítulos
         en formato SubStation Alpha Subtitles (SSA/ASS).
     </p>
@@ -127,11 +125,6 @@
 
     .kagamin img {
         width: 100%;
-    }
-
-    hr {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
     }
 
     .version {
