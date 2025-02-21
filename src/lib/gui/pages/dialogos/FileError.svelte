@@ -16,8 +16,7 @@
         : 'has-text-warning'}"
 >
     <p class="m-1">
-        {kind === "error" ? "Error" : "Advertencia"}:
-        {subtitleError.location}:
+        <b>{subtitleError.location}</b>:
         {subtitleError.error + (subtitleError.error.endsWith(".") ? "" : ".")}
     </p>
 
