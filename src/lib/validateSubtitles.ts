@@ -376,11 +376,13 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
             {
                 "errores": [
                     "numeroLinea": 1,
-                    "mensajeError": "descripción del error"
+                    "mensajeError": "descripción del error y consejor de cómo corregirlo"
                 ]
             }
             Considera '\N' como un espacio ' '.
-            Ignora los espacios consecutivos, son son errores.
+            Ignora los espacios consecutivos, no son errores.
+            Considera como errores sólo las faltas ortográficas graves.
+            Frases vulgares, de uso poco común o muletillas están bien.
             Retorna sólo el JSON como texto plano.
         `;
 
