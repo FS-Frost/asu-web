@@ -359,6 +359,8 @@ const GeminiValidation = z.object({
 type GeminiValidation = z.infer<typeof GeminiValidation>;
 
 export async function validateSubtitleWithGemini(input: string, geminiApiKey: string): Promise<GeminiValidation> {
+    let rawResponse = "";
+
     try {
         const storeResponseEnabled = false;
         if (storeResponseEnabled) {
@@ -384,6 +386,7 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
             systemInstruction: systemInstruction,
         });
 
+        // https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters
         const generationConfig: GenerationConfig = {
             temperature: 1,
             topP: 0.95,
@@ -422,7 +425,7 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
         });
 
         const result = await chatSession.sendMessage(input);
-        const rawResponse = result.response.text();
+        rawResponse = result.response.text();
         const geminiValidation = GeminiValidation.parse(JSON.parse(rawResponse));
 
         if (storeResponseEnabled) {
@@ -432,6 +435,10 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
         return geminiValidation;
     } catch (error) {
         console.error("error al validar subs con gemini", error);
+
+        if (rawResponse != "") {
+            console.log("rawResponse", rawResponse);
+        }
 
         let errorMessage = `${error}`;
         if (errorMessage.includes("API key not valid")) {
