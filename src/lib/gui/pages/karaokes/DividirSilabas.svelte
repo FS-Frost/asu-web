@@ -5,11 +5,15 @@
 
     const title: string = text.dividirSilabas;
 
+    let errorMessage = $state<string>("");
     let placeholder = $state<string>("");
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
 
     function processLines(): void {
+        errorMessage = "";
+        rawResultLines = "";
+
         if (rawTargetLines.length == 0) {
             return;
         }
@@ -25,7 +29,7 @@
 
             const line = asu.parseLine(rawLine);
             if (line == null) {
-                console.error(`line ${i + 1}: invalid line`);
+                errorMessage = `Subtítulos, línea ${i + 1} inválida: '${rawLine}'`;
                 break;
             }
 
@@ -66,6 +70,12 @@
 <section>
     <h1>{title}</h1>
 
+    {#if errorMessage != ""}
+        <div class="mt-2 mb-2 has-text-danger">
+            {errorMessage}
+        </div>
+    {/if}
+
     <div class="field">
         <label class="label" for="">
             {text.subtitulos} (romaji)
@@ -94,7 +104,8 @@
             ></i>
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>

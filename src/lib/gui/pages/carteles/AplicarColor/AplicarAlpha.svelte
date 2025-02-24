@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import * as asu from "@fs-frost/asu";
     import InputBox from "./InputBox.svelte";
     import { generateHexArray } from "$lib/carteles";
@@ -10,6 +10,8 @@
     const startPlaceholder: string = "0";
     const endPlaceholder: string = "FF";
 
+    let errorMessage = $state<string>("");
+    let errorMessageElement = $state<HTMLElement>();
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
     let alphaTotalStart = $state<string>("0");
@@ -73,278 +75,297 @@
         }
     }
 
-    function processLines(): void {
-        const lines: asu.Line[] = [];
-        const rawLines = rawTargetLines.split("\n");
-        for (const rawLine of rawLines) {
-            if (rawLine.length == 0) {
-                continue;
-            }
+    async function processLines(): Promise<void> {
+        try {
+            rawResultLines = "";
+            errorMessage = "";
 
-            const line = asu.parseLine(rawLine);
-            if (line != null) {
-                lines.push(line);
-            }
-        }
-
-        if (!alphaTotalDisabled) {
-            const startValue = asu.hexToNumber(alphaTotalStart);
-            const endValue = asu.hexToNumber(alphaTotalEnd);
-
-            if (startValue >= endValue) {
-                alert("El inicio de alpha total debe ser menor al fin.");
-                return;
-            }
-
-            if (startValue < 0) {
-                alert(
-                    "El inicio de alpha total debe ser mayor o igual a 00 (0).",
-                );
-                return;
-            }
-
-            if (endValue > 255) {
-                alert(
-                    "El fin de alpha total debe ser menor o igual a FF (255).",
-                );
-                return;
-            }
-
-            const alphaHexValues = generateHexArray(startValue, endValue);
-            if (reverseLinesEnabled) {
-                alphaHexValues.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                let alphaIndex = Math.floor(
-                    (alphaHexValues.length * i) / lines.length,
-                );
-
-                if (alphaIndex >= alphaHexValues.length) {
-                    alphaIndex = alphaHexValues.length - 1;
+            const lines: asu.Line[] = [];
+            const rawLines = rawTargetLines.split("\n");
+            for (const rawLine of rawLines) {
+                if (rawLine.length == 0) {
+                    continue;
                 }
 
-                const alphaValue = alphaHexValues[alphaIndex];
-                const alphaArg = `&H${alphaValue}&`;
-                const items = asu.parseContent(lines[i].content);
-                asu.setAlpha(items, alphaArg);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
+                const line = asu.parseLine(rawLine);
+                if (line != null) {
+                    lines.push(line);
+                }
+            }
 
-                if (i > 0) {
-                    result += "\n";
+            if (!alphaTotalDisabled) {
+                const startValue = asu.hexToNumber(alphaTotalStart);
+                const endValue = asu.hexToNumber(alphaTotalEnd);
+
+                if (startValue >= endValue) {
+                    errorMessage =
+                        "El inicio de alpha total debe ser menor al fin";
+                    return;
                 }
 
-                result += rawResult;
-            }
-
-            rawResultLines = result;
-            return;
-        }
-
-        if (!alpha1Disabled) {
-            const startValue = asu.hexToNumber(alpha1Start);
-            const endValue = asu.hexToNumber(alpha1End);
-
-            if (startValue >= endValue) {
-                alert("El inicio de alpha 1 debe ser menor al fin.");
-                return;
-            }
-
-            if (startValue < 0) {
-                alert("El inicio de alpha 1 debe ser mayor o igual a 00 (0).");
-                return;
-            }
-
-            if (endValue > 255) {
-                alert("El fin de alpha 1 debe ser menor o igual a FF (255).");
-                return;
-            }
-
-            const alphaHexValues = generateHexArray(startValue, endValue);
-            if (reverseLinesEnabled) {
-                alphaHexValues.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                let alphaIndex = Math.floor(
-                    (alphaHexValues.length * i) / lines.length,
-                );
-
-                if (alphaIndex >= alphaHexValues.length) {
-                    alphaIndex = alphaHexValues.length - 1;
+                if (startValue < 0) {
+                    errorMessage =
+                        "El inicio de alpha total debe ser mayor o igual a 00 (0)";
+                    return;
                 }
 
-                const alphaValue = alphaHexValues[alphaIndex];
-                const alphaArg = `&H${alphaValue}&`;
-                const items = asu.parseContent(lines[i].content);
-                asu.setAlpha1(items, alphaArg);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                if (endValue > 255) {
+                    errorMessage =
+                        "El fin de alpha total debe ser menor o igual a FF (255)";
+                    return;
                 }
 
-                result += rawResult;
-            }
-
-            rawResultLines = result;
-        }
-
-        if (!alpha2Disabled) {
-            const startValue = asu.hexToNumber(alpha2Start);
-            const endValue = asu.hexToNumber(alpha2End);
-
-            if (startValue >= endValue) {
-                alert("El inicio de alpha 2 debe ser menor al fin.");
-                return;
-            }
-
-            if (startValue < 0) {
-                alert("El inicio de alpha 2 debe ser mayor o igual a 00 (0).");
-                return;
-            }
-
-            if (endValue > 255) {
-                alert("El fin de alpha 2 debe ser menor o igual a FF (255).");
-                return;
-            }
-
-            const alphaHexValues = generateHexArray(startValue, endValue);
-            if (reverseLinesEnabled) {
-                alphaHexValues.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                let alphaIndex = Math.floor(
-                    (alphaHexValues.length * i) / lines.length,
-                );
-
-                if (alphaIndex >= alphaHexValues.length) {
-                    alphaIndex = alphaHexValues.length - 1;
+                const alphaHexValues = generateHexArray(startValue, endValue);
+                if (reverseLinesEnabled) {
+                    alphaHexValues.reverse();
                 }
 
-                const alphaValue = alphaHexValues[alphaIndex];
-                const alphaArg = `&H${alphaValue}&`;
-                const items = asu.parseContent(lines[i].content);
-                asu.setAlpha2(items, alphaArg);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let alphaIndex = Math.floor(
+                        (alphaHexValues.length * i) / lines.length
+                    );
 
-                if (i > 0) {
-                    result += "\n";
+                    if (alphaIndex >= alphaHexValues.length) {
+                        alphaIndex = alphaHexValues.length - 1;
+                    }
+
+                    const alphaValue = alphaHexValues[alphaIndex];
+                    const alphaArg = `&H${alphaValue}&`;
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setAlpha(items, alphaArg);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
                 }
 
-                result += rawResult;
-            }
-
-            rawResultLines = result;
-        }
-
-        if (!alpha3Disabled) {
-            const startValue = asu.hexToNumber(alpha3Start);
-            const endValue = asu.hexToNumber(alpha3End);
-
-            if (startValue >= endValue) {
-                alert("El inicio de alpha 3 debe ser menor al fin.");
+                rawResultLines = result;
                 return;
             }
 
-            if (startValue < 0) {
-                alert("El inicio de alpha 3 debe ser mayor o igual a 00 (0).");
-                return;
-            }
+            if (!alpha1Disabled) {
+                const startValue = asu.hexToNumber(alpha1Start);
+                const endValue = asu.hexToNumber(alpha1End);
 
-            if (endValue > 255) {
-                alert("El fin de alpha 3 debe ser menor o igual a FF (255).");
-                return;
-            }
-
-            const alphaHexValues = generateHexArray(startValue, endValue);
-            if (reverseLinesEnabled) {
-                alphaHexValues.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                let alphaIndex = Math.floor(
-                    (alphaHexValues.length * i) / lines.length,
-                );
-
-                if (alphaIndex >= alphaHexValues.length) {
-                    alphaIndex = alphaHexValues.length - 1;
+                if (startValue >= endValue) {
+                    errorMessage = "El inicio de alpha 1 debe ser menor al fin";
+                    return;
                 }
 
-                const alphaValue = alphaHexValues[alphaIndex];
-                const alphaArg = `&H${alphaValue}&`;
-                const items = asu.parseContent(lines[i].content);
-                asu.setAlpha3(items, alphaArg);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                if (startValue < 0) {
+                    errorMessage =
+                        "El inicio de alpha 1 debe ser mayor o igual a 00 (0)";
+                    return;
                 }
 
-                result += rawResult;
-            }
-
-            rawResultLines = result;
-        }
-
-        if (!alpha4Disabled) {
-            const startValue = asu.hexToNumber(alpha4Start);
-            const endValue = asu.hexToNumber(alpha4End);
-
-            if (startValue >= endValue) {
-                alert("El inicio de alpha 4 debe ser menor al fin.");
-                return;
-            }
-
-            if (startValue < 0) {
-                alert("El inicio de alpha 4 debe ser mayor o igual a 00 (0).");
-                return;
-            }
-
-            if (endValue > 255) {
-                alert("El fin de alpha 4 debe ser menor o igual a FF (255).");
-                return;
-            }
-
-            const alphaHexValues = generateHexArray(startValue, endValue);
-            if (reverseLinesEnabled) {
-                alphaHexValues.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                let alphaIndex = Math.floor(
-                    (alphaHexValues.length * i) / lines.length,
-                );
-
-                if (alphaIndex >= alphaHexValues.length) {
-                    alphaIndex = alphaHexValues.length - 1;
+                if (endValue > 255) {
+                    errorMessage =
+                        "El fin de alpha 1 debe ser menor o igual a FF (255)";
+                    return;
                 }
 
-                const alphaValue = alphaHexValues[alphaIndex];
-                const alphaArg = `&H${alphaValue}&`;
-                const items = asu.parseContent(lines[i].content);
-                asu.setAlpha4(items, alphaArg);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                const alphaHexValues = generateHexArray(startValue, endValue);
+                if (reverseLinesEnabled) {
+                    alphaHexValues.reverse();
                 }
 
-                result += rawResult;
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let alphaIndex = Math.floor(
+                        (alphaHexValues.length * i) / lines.length
+                    );
+
+                    if (alphaIndex >= alphaHexValues.length) {
+                        alphaIndex = alphaHexValues.length - 1;
+                    }
+
+                    const alphaValue = alphaHexValues[alphaIndex];
+                    const alphaArg = `&H${alphaValue}&`;
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setAlpha1(items, alphaArg);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
             }
 
-            rawResultLines = result;
+            if (!alpha2Disabled) {
+                const startValue = asu.hexToNumber(alpha2Start);
+                const endValue = asu.hexToNumber(alpha2End);
+
+                if (startValue >= endValue) {
+                    errorMessage = "El inicio de alpha 2 debe ser menor al fin";
+                    return;
+                }
+
+                if (startValue < 0) {
+                    errorMessage =
+                        "El inicio de alpha 2 debe ser mayor o igual a 00 (0)";
+                    return;
+                }
+
+                if (endValue > 255) {
+                    errorMessage =
+                        "El fin de alpha 2 debe ser menor o igual a FF (255)";
+                    return;
+                }
+
+                const alphaHexValues = generateHexArray(startValue, endValue);
+                if (reverseLinesEnabled) {
+                    alphaHexValues.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let alphaIndex = Math.floor(
+                        (alphaHexValues.length * i) / lines.length
+                    );
+
+                    if (alphaIndex >= alphaHexValues.length) {
+                        alphaIndex = alphaHexValues.length - 1;
+                    }
+
+                    const alphaValue = alphaHexValues[alphaIndex];
+                    const alphaArg = `&H${alphaValue}&`;
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setAlpha2(items, alphaArg);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+
+            if (!alpha3Disabled) {
+                const startValue = asu.hexToNumber(alpha3Start);
+                const endValue = asu.hexToNumber(alpha3End);
+
+                if (startValue >= endValue) {
+                    errorMessage = "El inicio de alpha 3 debe ser menor al fin";
+                    return;
+                }
+
+                if (startValue < 0) {
+                    errorMessage =
+                        "El inicio de alpha 3 debe ser mayor o igual a 00 (0)";
+                    return;
+                }
+
+                if (endValue > 255) {
+                    errorMessage =
+                        "El fin de alpha 3 debe ser menor o igual a FF (255)";
+                    return;
+                }
+
+                const alphaHexValues = generateHexArray(startValue, endValue);
+                if (reverseLinesEnabled) {
+                    alphaHexValues.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let alphaIndex = Math.floor(
+                        (alphaHexValues.length * i) / lines.length
+                    );
+
+                    if (alphaIndex >= alphaHexValues.length) {
+                        alphaIndex = alphaHexValues.length - 1;
+                    }
+
+                    const alphaValue = alphaHexValues[alphaIndex];
+                    const alphaArg = `&H${alphaValue}&`;
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setAlpha3(items, alphaArg);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+
+            if (!alpha4Disabled) {
+                const startValue = asu.hexToNumber(alpha4Start);
+                const endValue = asu.hexToNumber(alpha4End);
+
+                if (startValue >= endValue) {
+                    errorMessage = "El inicio de alpha 4 debe ser menor al fin";
+                    return;
+                }
+
+                if (startValue < 0) {
+                    errorMessage =
+                        "El inicio de alpha 4 debe ser mayor o igual a 00 (0)";
+                    return;
+                }
+
+                if (endValue > 255) {
+                    errorMessage =
+                        "El fin de alpha 4 debe ser menor o igual a FF (255)";
+                    return;
+                }
+
+                const alphaHexValues = generateHexArray(startValue, endValue);
+                if (reverseLinesEnabled) {
+                    alphaHexValues.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    let alphaIndex = Math.floor(
+                        (alphaHexValues.length * i) / lines.length
+                    );
+
+                    if (alphaIndex >= alphaHexValues.length) {
+                        alphaIndex = alphaHexValues.length - 1;
+                    }
+
+                    const alphaValue = alphaHexValues[alphaIndex];
+                    const alphaArg = `&H${alphaValue}&`;
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setAlpha4(items, alphaArg);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+        } catch (error) {
+            console.error("error al procesar líneas", error);
+        } finally {
+            await tick();
+            errorMessageElement?.scrollIntoView({
+                behavior: "smooth",
+            });
         }
     }
 
@@ -361,6 +382,12 @@
 
 <section>
     <h1>{title}</h1>
+
+    {#if errorMessage != ""}
+        <div bind:this={errorMessageElement} class="mt-2 mb-2 has-text-danger">
+            {errorMessage}
+        </div>
+    {/if}
 
     <label class="label" for="">Configuración alpha</label>
 
@@ -453,7 +480,8 @@
             <ButtonCopyResult {rawResultLines} />
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>
@@ -461,9 +489,5 @@
 <style>
     section {
         width: 100%;
-    }
-
-    .reverse {
-        margin-left: 0.5rem;
     }
 </style>

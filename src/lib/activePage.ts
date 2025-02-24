@@ -2,14 +2,15 @@ import { writable } from 'svelte/store';
 
 const pagesKeys = <const>[
     "inicio",
-    "acercaDe",
     "carteles.copiarMovimiento",
     "carteles.aplicarSecuenciaPosiciones",
+    "carteles.aplicarTraslacion",
     "carteles.aplicarAlpha",
     "carteles.aplicarColor",
     "dialogos.validarDialogos",
     "karaokes.dividirKaraoke",
     "karaokes.dividirSilabas",
+    "acercaDe",
 ];
 
 export const pages: string[] = pagesKeys.map(page => page.toString());

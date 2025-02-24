@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import * as asu from "@fs-frost/asu";
     import InputBox from "./InputBox.svelte";
     import { interpolateColors } from "$lib/carteles";
@@ -10,6 +10,8 @@
     const startPlaceholder: string = "&HFFFFFF&";
     const endPlaceholder: string = "&H000000&";
 
+    let errorMessage = $state<string>("");
+    let errorMessageElement = $state<HTMLElement>();
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
     let colorTotalStart = $state<string>(startPlaceholder);
@@ -73,224 +75,236 @@
         }
     }
 
-    function processLines(): void {
-        const lines: asu.Line[] = [];
-        const rawLines = rawTargetLines.split("\n");
-        for (const rawLine of rawLines) {
-            if (rawLine.length == 0) {
-                continue;
-            }
+    async function processLines(): Promise<void> {
+        try {
+            rawResultLines = "";
+            errorMessage = "";
 
-            const line = asu.parseLine(rawLine);
-            if (line != null) {
-                lines.push(line);
-            }
-        }
-
-        if (!colorTotalDisabled) {
-            const colorBGRStart = asu.parseColorBGR(colorTotalStart);
-            if (colorBGRStart == null) {
-                alert(`Color total de inicio inválido: ${colorTotalStart}`);
-                return;
-            }
-
-            const colorBGREnd = asu.parseColorBGR(colorTotalEnd);
-            if (colorBGREnd == null) {
-                alert(`Color total de fin inválido: ${colorTotalEnd}`);
-                return;
-            }
-
-            const interpolatedColors = interpolateColors(
-                colorBGRStart,
-                colorBGREnd,
-                lines.length,
-            );
-
-            if (reverseLinesEnabled) {
-                interpolatedColors.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                const color = interpolatedColors[i];
-                const items = asu.parseContent(lines[i].content);
-                asu.setColor(items, color.blue, color.green, color.red);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+            const lines: asu.Line[] = [];
+            const rawLines = rawTargetLines.split("\n");
+            for (const rawLine of rawLines) {
+                if (rawLine.length == 0) {
+                    continue;
                 }
 
-                result += rawResult;
+                const line = asu.parseLine(rawLine);
+                if (line != null) {
+                    lines.push(line);
+                }
             }
 
-            rawResultLines = result;
-            return;
-        }
-
-        if (!color1Disabled) {
-            const colorBGRStart = asu.parseColorBGR(color1Start);
-            if (colorBGRStart == null) {
-                alert(`Color 1 de inicio inválido: ${color1Start}`);
-                return;
-            }
-
-            const colorBGREnd = asu.parseColorBGR(color1End);
-            if (colorBGREnd == null) {
-                alert(`Color 1 de fin inválido: ${color1End}`);
-                return;
-            }
-
-            const interpolatedColors = interpolateColors(
-                colorBGRStart,
-                colorBGREnd,
-                lines.length,
-            );
-
-            if (reverseLinesEnabled) {
-                interpolatedColors.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                const color = interpolatedColors[i];
-                const items = asu.parseContent(lines[i].content);
-                asu.setColor1(items, color.blue, color.green, color.red);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+            if (!colorTotalDisabled) {
+                const colorBGRStart = asu.parseColorBGR(colorTotalStart);
+                if (colorBGRStart == null) {
+                    errorMessage = `Color total de inicio inválido: ${colorTotalStart}`;
+                    return;
                 }
 
-                result += rawResult;
-            }
-
-            rawResultLines = result;
-        }
-
-        if (!color2Disabled) {
-            const colorBGRStart = asu.parseColorBGR(color2Start);
-            if (colorBGRStart == null) {
-                alert(`Color 2 de inicio inválido: ${color2Start}`);
-                return;
-            }
-
-            const colorBGREnd = asu.parseColorBGR(color2End);
-            if (colorBGREnd == null) {
-                alert(`Color 2 de fin inválido: ${color2End}`);
-                return;
-            }
-
-            const interpolatedColors = interpolateColors(
-                colorBGRStart,
-                colorBGREnd,
-                lines.length,
-            );
-
-            if (reverseLinesEnabled) {
-                interpolatedColors.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                const color = interpolatedColors[i];
-                const items = asu.parseContent(lines[i].content);
-                asu.setColor2(items, color.blue, color.green, color.red);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                const colorBGREnd = asu.parseColorBGR(colorTotalEnd);
+                if (colorBGREnd == null) {
+                    errorMessage = `Color total de fin inválido: ${colorTotalEnd}`;
+                    return;
                 }
 
-                result += rawResult;
-            }
+                const interpolatedColors = interpolateColors(
+                    colorBGRStart,
+                    colorBGREnd,
+                    lines.length
+                );
 
-            rawResultLines = result;
-        }
-
-        if (!color3Disabled) {
-            const colorBGRStart = asu.parseColorBGR(color3Start);
-            if (colorBGRStart == null) {
-                alert(`Color 3 de inicio inválido: ${color3Start}`);
-                return;
-            }
-
-            const colorBGREnd = asu.parseColorBGR(color3End);
-            if (colorBGREnd == null) {
-                alert(`Color 3 de fin inválido: ${color3End}`);
-                return;
-            }
-
-            const interpolatedColors = interpolateColors(
-                colorBGRStart,
-                colorBGREnd,
-                lines.length,
-            );
-
-            if (reverseLinesEnabled) {
-                interpolatedColors.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                const color = interpolatedColors[i];
-                const items = asu.parseContent(lines[i].content);
-                asu.setColor3(items, color.blue, color.green, color.red);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                if (reverseLinesEnabled) {
+                    interpolatedColors.reverse();
                 }
 
-                result += rawResult;
-            }
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    const color = interpolatedColors[i];
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setColor(items, color.blue, color.green, color.red);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
 
-            rawResultLines = result;
-        }
+                    if (i > 0) {
+                        result += "\n";
+                    }
 
-        if (!color4Disabled) {
-            const colorBGRStart = asu.parseColorBGR(color4Start);
-            if (colorBGRStart == null) {
-                alert(`Color 4 de inicio inválido: ${color4Start}`);
-                return;
-            }
-
-            const colorBGREnd = asu.parseColorBGR(color4End);
-            if (colorBGREnd == null) {
-                alert(`Color 4 de fin inválido: ${color4End}`);
-                return;
-            }
-
-            const interpolatedColors = interpolateColors(
-                colorBGRStart,
-                colorBGREnd,
-                lines.length,
-            );
-
-            if (reverseLinesEnabled) {
-                interpolatedColors.reverse();
-            }
-
-            let result = "";
-            for (let i = 0; i < lines.length; i++) {
-                const color = interpolatedColors[i];
-                const items = asu.parseContent(lines[i].content);
-                asu.setColor4(items, color.blue, color.green, color.red);
-                lines[i].content = asu.contentsToString(items);
-                const rawResult = asu.lineToString(lines[i]);
-
-                if (i > 0) {
-                    result += "\n";
+                    result += rawResult;
                 }
 
-                result += rawResult;
+                rawResultLines = result;
+                return;
             }
 
-            rawResultLines = result;
+            if (!color1Disabled) {
+                const colorBGRStart = asu.parseColorBGR(color1Start);
+                if (colorBGRStart == null) {
+                    errorMessage = `Color 1 de inicio inválido: ${color1Start}`;
+                    return;
+                }
+
+                const colorBGREnd = asu.parseColorBGR(color1End);
+                if (colorBGREnd == null) {
+                    errorMessage = `Color 1 de fin inválido: ${color1End}`;
+                    return;
+                }
+
+                const interpolatedColors = interpolateColors(
+                    colorBGRStart,
+                    colorBGREnd,
+                    lines.length
+                );
+
+                if (reverseLinesEnabled) {
+                    interpolatedColors.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    const color = interpolatedColors[i];
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setColor1(items, color.blue, color.green, color.red);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+
+            if (!color2Disabled) {
+                const colorBGRStart = asu.parseColorBGR(color2Start);
+                if (colorBGRStart == null) {
+                    errorMessage = `Color 2 de inicio inválido: ${color2Start}`;
+                    return;
+                }
+
+                const colorBGREnd = asu.parseColorBGR(color2End);
+                if (colorBGREnd == null) {
+                    errorMessage = `Color 2 de fin inválido: ${color2End}`;
+                    return;
+                }
+
+                const interpolatedColors = interpolateColors(
+                    colorBGRStart,
+                    colorBGREnd,
+                    lines.length
+                );
+
+                if (reverseLinesEnabled) {
+                    interpolatedColors.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    const color = interpolatedColors[i];
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setColor2(items, color.blue, color.green, color.red);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+
+            if (!color3Disabled) {
+                const colorBGRStart = asu.parseColorBGR(color3Start);
+                if (colorBGRStart == null) {
+                    errorMessage = `Color 3 de inicio inválido: ${color3Start}`;
+                    return;
+                }
+
+                const colorBGREnd = asu.parseColorBGR(color3End);
+                if (colorBGREnd == null) {
+                    errorMessage = `Color 3 de fin inválido: ${color3End}`;
+                    return;
+                }
+
+                const interpolatedColors = interpolateColors(
+                    colorBGRStart,
+                    colorBGREnd,
+                    lines.length
+                );
+
+                if (reverseLinesEnabled) {
+                    interpolatedColors.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    const color = interpolatedColors[i];
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setColor3(items, color.blue, color.green, color.red);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+
+            if (!color4Disabled) {
+                const colorBGRStart = asu.parseColorBGR(color4Start);
+                if (colorBGRStart == null) {
+                    errorMessage = `Color 4 de inicio inválido: ${color4Start}`;
+                    return;
+                }
+
+                const colorBGREnd = asu.parseColorBGR(color4End);
+                if (colorBGREnd == null) {
+                    errorMessage = `Color 4 de fin inválido: ${color4End}`;
+                    return;
+                }
+
+                const interpolatedColors = interpolateColors(
+                    colorBGRStart,
+                    colorBGREnd,
+                    lines.length
+                );
+
+                if (reverseLinesEnabled) {
+                    interpolatedColors.reverse();
+                }
+
+                let result = "";
+                for (let i = 0; i < lines.length; i++) {
+                    const color = interpolatedColors[i];
+                    const items = asu.parseContent(lines[i].content);
+                    asu.setColor4(items, color.blue, color.green, color.red);
+                    lines[i].content = asu.contentsToString(items);
+                    const rawResult = asu.lineToString(lines[i]);
+
+                    if (i > 0) {
+                        result += "\n";
+                    }
+
+                    result += rawResult;
+                }
+
+                rawResultLines = result;
+            }
+        } catch (error) {
+            console.error("error al procesar líneas", error);
+        } finally {
+            await tick();
+            errorMessageElement?.scrollIntoView({
+                behavior: "smooth",
+            });
         }
     }
 
@@ -313,6 +327,12 @@
 
 <section>
     <h1>{title}</h1>
+
+    {#if errorMessage != ""}
+        <div bind:this={errorMessageElement} class="mt-2 mb-2 has-text-danger">
+            {errorMessage}
+        </div>
+    {/if}
 
     <label class="label" for="">Configuración de color</label>
 
@@ -405,7 +425,8 @@
             <ButtonCopyResult {rawResultLines} />
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>
@@ -413,9 +434,5 @@
 <style>
     section {
         width: 100%;
-    }
-
-    .reverse {
-        margin-left: 0.5rem;
     }
 </style>

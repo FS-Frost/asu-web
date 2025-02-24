@@ -91,7 +91,7 @@
         const itemsLine2 = items.slice(indexEnd);
         line.end = asu.secondsToTime(originalEndInSeconds);
         line.start = asu.secondsToTime(
-            originalEndInSeconds - centisecondsSecondLine / 100,
+            originalEndInSeconds - centisecondsSecondLine / 100
         );
 
         line.content = asu.contentsToString(itemsLine2);
@@ -150,7 +150,7 @@
                     x.name === asu.TagName.kLowerCase ||
                     x.name === asu.TagName.kUpperCase ||
                     x.name === asu.TagName.kf ||
-                    x.name === asu.TagName.ko,
+                    x.name === asu.TagName.ko
             );
 
             if (tagK == null) {
@@ -248,7 +248,8 @@
             ></i>
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>

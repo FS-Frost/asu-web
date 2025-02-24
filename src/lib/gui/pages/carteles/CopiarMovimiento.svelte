@@ -6,36 +6,46 @@
     const title: string = text.copiarMovimiento;
 
     let rawBaseLine = $state<string>(
-        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!",
+        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!"
     );
 
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
+    let rawBaseMove = $state<string>("");
+    let errorMessage = $state<string>("");
 
     $effect(() => {
         processLines(rawBaseLine, rawTargetLines);
     });
 
     function processLines(rawBaseLine: string, rawTargetLines: string): void {
+        rawBaseMove = "";
+        rawResultLines = "";
+        errorMessage = "";
+
         if (rawTargetLines.length == 0) {
             return;
         }
 
         const targetLines: string[] = rawTargetLines.split("\n");
-        console.log(targetLines);
 
         const baseLine = asu.parseLine(rawBaseLine);
         if (baseLine == null) {
-            console.error("invalid base line", rawBaseLine);
+            errorMessage = `Movimiento base, línea inválida: '${rawBaseLine}'`;
             return;
         }
 
         const baseItems = asu.parseContent(baseLine.content);
         const baseMove = asu.findMove(baseItems);
         if (baseMove == null) {
-            console.error("base move not found");
+            errorMessage = `Movimiento base, \\move no encontrado: '${rawBaseLine}'`;
             return;
         }
+
+        rawBaseMove = asu.contentEffectToString({
+            name: "effect",
+            tags: [baseMove],
+        });
 
         const deltaX = baseMove.x2 - baseMove.x1;
         const deltaY = baseMove.y2 - baseMove.y1;
@@ -49,14 +59,14 @@
 
             const line = asu.parseLine(rawLine);
             if (line == null) {
-                console.error(`line ${i + 1}: invalid line`);
+                errorMessage = `Subtítulos, línea ${i + 1} inválida: '${rawLine}'`;
                 break;
             }
 
             const items = asu.parseContent(line.content);
             const pos = asu.findPos(items);
             if (pos == null) {
-                console.error(`line ${i + 1}: pos not found`);
+                errorMessage = `Subtítulos, línea ${i + 1}, \\pos no encontrado: '${rawLine}'`;
                 break;
             }
 
@@ -65,11 +75,10 @@
             const y1 = pos.y;
             const x2 = pos.x + deltaX;
             const y2 = pos.y + deltaY;
+
             asu.setMove(items, x1, y1, x2, y2, baseMove.t1, baseMove.t2);
-            const newContent = asu.contentsToString(items);
-            line.content = newContent;
+            line.content = asu.contentsToString(items);
             const rawResult = asu.lineToString(line);
-            console.log(rawResult);
 
             if (i > 0) {
                 result += "\n";
@@ -86,12 +95,16 @@
         alert("¡Líneas copiadas al portapapeles!");
     }
 
-    onMount(() => {
+    function showExample(): void {
         for (let i = 1; i <= 10; i++) {
             const x = 182 + i * 5;
             const y = 421 + i * 7;
             rawTargetLines += `Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\pos(${x},${y})}LINEA ${i}\n`;
         }
+    }
+
+    onMount(() => {
+        showExample();
     });
 </script>
 
@@ -102,12 +115,18 @@
 <section>
     <h1>{title}</h1>
 
+    {#if errorMessage != ""}
+        <div class="mt-2 mb-2 has-text-danger">
+            {errorMessage}
+        </div>
+    {/if}
+
     <div class="field">
         <label class="label" for="">Movimiento base</label>
         <div class="control">
             <input
                 bind:value={rawBaseLine}
-                class="input"
+                class="input {rawBaseMove == '' ? 'is-danger' : ''}"
                 type="text"
                 placeholder="\move(10,20,30,40)"
             />
@@ -141,7 +160,8 @@
             ></i>
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>

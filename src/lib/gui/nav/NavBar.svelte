@@ -78,6 +78,11 @@
                     />
 
                     <NavItem
+                        text={text.aplicarTraslacion}
+                        page="carteles.aplicarTraslacion"
+                    />
+
+                    <NavItem
                         text={text.copiarMovimiento}
                         page="carteles.copiarMovimiento"
                     />
@@ -122,7 +127,7 @@
                     href={generateBranchLink(
                         buildInfo.actor,
                         buildInfo.repo,
-                        buildInfo.ref,
+                        buildInfo.ref
                     )}
                     target="_blank"
                 >

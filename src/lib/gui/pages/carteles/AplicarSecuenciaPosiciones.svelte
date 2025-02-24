@@ -9,6 +9,7 @@
     let rawTargetLines = $state<string>("");
     let rawResultLines = $state<string>("");
     let reverseLinesEnabled = $state<boolean>(false);
+    let errorMessage = $state<string>("");
 
     $effect(() => {
         processLines(rawBaseLines, rawTargetLines, reverseLinesEnabled);
@@ -17,8 +18,11 @@
     function processLines(
         rawBaseLines: string,
         rawTargetLines: string,
-        reverseLinesEnabled: boolean,
+        reverseLinesEnabled: boolean
     ): void {
+        errorMessage = "";
+        rawResultLines = "";
+
         if (rawTargetLines.length == 0) {
             return;
         }
@@ -26,7 +30,8 @@
         const baseLines: asu.Line[] = [];
         {
             const rawLines = rawBaseLines.split("\n");
-            for (const rawLine of rawLines) {
+            for (let i = 0; i < rawLines.length; i++) {
+                const rawLine = rawLines[i];
                 if (rawLine.length == 0) {
                     continue;
                 }
@@ -39,8 +44,7 @@
                 const items = asu.parseContent(line.content);
                 const tagPos = asu.findPos(items);
                 if (tagPos == null) {
-                    alert(`Línea base sin \\pos copiada: '${rawLine}'`);
-                    console.log(rawLine);
+                    errorMessage = `Secuencia, línea ${i + 1}, \\pos no encontrado: '${rawLine}'`;
                     return;
                 }
 
@@ -51,7 +55,8 @@
         const targetLines: asu.Line[] = [];
         {
             const rawLines = rawTargetLines.split("\n");
-            for (const rawLine of rawLines) {
+            for (let i = 0; i < rawLines.length; i++) {
+                const rawLine = rawLines[i];
                 if (rawLine.length == 0) {
                     continue;
                 }
@@ -64,8 +69,7 @@
                 const items = asu.parseContent(line.content);
                 const tagPos = asu.findPos(items);
                 if (tagPos == null) {
-                    alert(`Línea objetivo sin \\pos: '${rawLine}'`);
-                    console.log(rawLine);
+                    errorMessage = `Subtítulos, línea ${i + 1}, \\pos no encontrado: '${rawLine}'`;
                     return;
                 }
 
@@ -80,8 +84,7 @@
             const targetTagPos = asu.findPos(targetItems);
             if (targetTagPos == null) {
                 const rawLine = asu.lineToString(targetLine);
-                alert(`Línea objetivo sin \\pos: '${rawLine}'`);
-                console.log(rawLine);
+                errorMessage = `Subtítulos, línea ${i + 1}, \\pos no encontrado: '${rawLine}'`;
                 return;
             }
 
@@ -100,8 +103,10 @@
                 const deltaY = deltasXY[u][1];
                 const newPosX = refPosX + deltaX;
                 const newPosY = refPosY + deltaY;
+
                 refPosX = newPosX;
                 refPosY = newPosY;
+
                 asu.setPos(targetItems, newPosX, newPosY);
                 targetLine.content = asu.contentsToString(targetItems);
 
@@ -135,16 +140,14 @@
             const itemsLine1 = asu.parseContent(line1.content);
             const tagPos1 = asu.findPos(itemsLine1);
             if (tagPos1 == null) {
-                alert(`Línea base sin \\pos: '${asu.lineToString(line1)}'`);
-                console.log(line1);
+                errorMessage = `Subtítulos, línea ${i + 1}, \\pos no encontrado: '${asu.lineToString(line1)}'`;
                 return [];
             }
 
             const itemsLine2 = asu.parseContent(line2.content);
             const tagPos2 = asu.findPos(itemsLine2);
             if (tagPos2 == null) {
-                alert(`Línea base sin \\pos: '${asu.lineToString(line2)}'`);
-                console.log(line2);
+                errorMessage = `Subtítulos, línea ${i + 2}, \\pos encontrado: '${asu.lineToString(line2)}'`;
                 return [];
             }
 
@@ -161,7 +164,7 @@
         alert("¡Líneas copiadas al portapapeles!");
     }
 
-    onMount(() => {
+    function showExample(): void {
         rawBaseLines +=
             "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.6,593.8)}Tama:\n";
 
@@ -200,6 +203,10 @@
         // Para probar secuencia inversa
         // rawTargetLines =
         //     "Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(982.96,554.13)}REVERSE";
+    }
+
+    onMount(() => {
+        showExample();
     });
 </script>
 
@@ -209,6 +216,10 @@
 
 <section>
     <h1>{title}</h1>
+
+    {#if errorMessage != ""}
+        <div class="mt-2 mb-2 has-text-danger">{errorMessage}</div>
+    {/if}
 
     <div class="field">
         <label class="label" for=""> Secuencia de posiciones </label>
@@ -254,7 +265,8 @@
             ></i>
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea"></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>

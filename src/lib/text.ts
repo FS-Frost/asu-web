@@ -4,6 +4,7 @@ export default {
     aplicarAlpha: "Aplicar alpha",
     aplicarColor: "Aplicar color",
     aplicarSecuenciaPosiciones: "Aplicar secuencia de posiciones",
+    aplicarTraslacion: "Aplicar traslación",
     copiar: "Copiar",
     copiarMovimiento: "Copiar movimiento",
     dividirKaraoke: "Dividir karaoke",
