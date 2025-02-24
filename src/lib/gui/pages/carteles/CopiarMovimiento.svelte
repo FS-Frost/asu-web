@@ -6,7 +6,7 @@
     const title: string = text.copiarMovimiento;
 
     let rawBaseLine = $state<string>(
-        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!"
+        "Dialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,{\\move(320,470,320,168,0,4963)}Urusai!",
     );
 
     let rawTargetLines = $state<string>("");
@@ -42,10 +42,7 @@
             return;
         }
 
-        rawBaseMove = asu.contentEffectToString({
-            name: "effect",
-            tags: [baseMove],
-        });
+        rawBaseMove = asu.tagToString(baseMove);
 
         const deltaX = baseMove.x2 - baseMove.x1;
         const deltaY = baseMove.y2 - baseMove.y1;
