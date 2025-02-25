@@ -22,7 +22,7 @@ export function saveOptions(options: Options): void {
 
 export function loadOptions(): Options {
     try {
-        const rawOptions = localStorage.getItem(keyOptions) ?? "";
+        const rawOptions = localStorage.getItem(keyOptions) ?? "{}";
         return Options.parse(JSON.parse(rawOptions));
     } catch (error) {
         console.error("error al cargar opciones de validar diálogos", error);

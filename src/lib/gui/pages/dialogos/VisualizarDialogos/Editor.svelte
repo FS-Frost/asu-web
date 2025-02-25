@@ -52,25 +52,36 @@
 <div class="file-section boxed">
     <div class="section-title">Subtítulos</div>
 
-    {#each file.events.lines as linea, indexLinea}
-        <div class="linea">
-            <span class="numero-linea">{indexLinea + 1}</span>
-            <SubsArea kind="readonly" rawMode={false} text={linea.content}
-            ></SubsArea>
-        </div>
-    {/each}
+    <table class="table is-fullwidth is-narrow">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Contenido</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each file.events.lines as linea, indexLinea}
+                <tr>
+                    <td>{indexLinea + 1}</td>
+                    <td>{asu.timeToString(linea.start)}</td>
+                    <td>{asu.timeToString(linea.end)}</td>
+                    <td>
+                        <SubsArea
+                            kind="readonly"
+                            rawMode={false}
+                            hiddeOptions
+                            text={linea.content}
+                        ></SubsArea>
+                    </td>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
 </div>
 
 <style>
-    .linea {
-        display: grid;
-        grid-template-columns: 6% auto;
-    }
-
-    .numero-linea {
-        text-align: center;
-    }
-
     .file-section {
         margin-top: 1rem;
     }

@@ -1,7 +1,6 @@
 <script lang="ts">
     import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
-    import { onMount } from "svelte";
     import Editor from "./Editor.svelte";
 
     const title: string = text.visualizarDialogos;
@@ -31,8 +30,6 @@
             console.error("error al procesa el archivo", error);
         }
     }
-
-    onMount(() => {});
 </script>
 
 <svelte:head>

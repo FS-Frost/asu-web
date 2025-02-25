@@ -8,9 +8,10 @@
         kind: Kind;
         text: string;
         rawMode: boolean;
+        hiddeOptions?: boolean;
     };
 
-    let { kind, text, rawMode }: Props = $props();
+    let { kind, text, rawMode, hiddeOptions = false }: Props = $props();
 
     let visibleText = $state<string>(text);
     let rows = $state<number>(1);
@@ -67,7 +68,7 @@
     });
 </script>
 
-<div class="area">
+<div class="area {hiddeOptions ? 'without-options' : 'with-options'}">
     <textarea
         bind:this={textArea}
         class="textarea {generateTextAreaClass(kind)}"
@@ -76,15 +77,23 @@
         {rows}
     ></textarea>
 
-    <button class="button" onclick={alternateText} aria-label="alternar">
-        {rawMode ? "Ocultar etiquetas" : "Ver etiquetas"}
-    </button>
+    {#if !hiddeOptions}
+        <button class="button" onclick={alternateText} aria-label="alternar">
+            {rawMode ? "Ocultar etiquetas" : "Ver etiquetas"}
+        </button>
+    {/if}
 </div>
 
 <style>
-    .area {
+    .area.with-options {
         display: grid;
         grid-template-columns: 85% auto;
+        gap: 0.5rem;
+    }
+
+    .area.without-options {
+        display: grid;
+        grid-template-columns: auto;
         gap: 0.5rem;
     }
 
