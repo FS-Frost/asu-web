@@ -94,6 +94,11 @@
 
                 <div class="navbar-dropdown">
                     <NavItem
+                        text={text.visualizarDialogos}
+                        page="dialogos.visualizarDialogos"
+                    />
+
+                    <NavItem
                         text={text.validarDialogos}
                         page="dialogos.validarDialogos"
                     />
@@ -127,7 +132,7 @@
                     href={generateBranchLink(
                         buildInfo.actor,
                         buildInfo.repo,
-                        buildInfo.ref
+                        buildInfo.ref,
                     )}
                     target="_blank"
                 >

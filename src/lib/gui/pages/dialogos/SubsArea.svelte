@@ -2,8 +2,10 @@
     import * as asu from "@fs-frost/asu";
     import { onMount, tick } from "svelte";
 
+    type Kind = "error" | "warning" | "readonly";
+
     type Props = {
-        kind: "error" | "warning";
+        kind: Kind;
         text: string;
         rawMode: boolean;
     };
@@ -49,6 +51,17 @@
         return Math.ceil(textArea.scrollHeight / textArea.clientHeight);
     }
 
+    function generateTextAreaClass(kind: Kind): string {
+        switch (kind) {
+            case "error":
+                return "is-danger";
+            case "warning":
+                return "is-warning";
+            default:
+                return "";
+        }
+    }
+
     onMount(async () => {
         await update();
     });
@@ -57,7 +70,7 @@
 <div class="area">
     <textarea
         bind:this={textArea}
-        class="textarea {kind === 'error' ? 'is-danger' : 'is-warning'}"
+        class="textarea {generateTextAreaClass(kind)}"
         value={visibleText}
         readonly
         {rows}

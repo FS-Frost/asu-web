@@ -11,6 +11,7 @@
     import DividirKaraoke from "$lib/gui/pages/karaokes/DividirKaraoke.svelte";
     import ValidarDialogos from "$lib/gui/pages/dialogos/ValidarDialogos.svelte";
     import AplicarTraslacion from "$lib/gui/pages/carteles/AplicarTraslacion.svelte";
+    import VisualizarDialogos from "$lib/gui/pages/dialogos/VisualizarDialogos/VisualizarDialogos.svelte";
 
     let page = $state<ActivePage | "">("");
 
@@ -42,6 +43,8 @@
     <AplicarColor />
 {:else if page == "carteles.aplicarTraslacion"}
     <AplicarTraslacion />
+{:else if page == "dialogos.visualizarDialogos"}
+    <VisualizarDialogos />
 {:else if page == "dialogos.validarDialogos"}
     <ValidarDialogos />
 {:else if page == "karaokes.dividirKaraoke"}

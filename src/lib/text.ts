@@ -12,6 +12,7 @@ export default {
     lineasCopiadas: "¡Líneas copiadas al portapapeles!",
     resultado: "Resultado",
     subtitulos: "Subtítulos",
+    visualizarDialogos: "Visualizar diálogos",
     validarDialogos: "Validar diálogos",
     validateWithGemini: "Validar con Google Gemini",
     validateLineStyleExists: "Validar que los estilos existan",

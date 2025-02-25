@@ -1,0 +1,82 @@
+<script lang="ts">
+    import * as asu from "@fs-frost/asu";
+    import SubsArea from "../SubsArea.svelte";
+
+    type Props = {
+        file: asu.ASSFile;
+    };
+
+    let { file = $bindable() }: Props = $props();
+
+    let scriptInfoProps: string[] = $derived([
+        ...file.scriptInfo.properties.keys(),
+    ]);
+</script>
+
+<div class="file-section boxed">
+    <div class="section-title">Script Info</div>
+
+    {#each scriptInfoProps as prop}
+        <div class="field">
+            <label class="label" for="">{prop}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    value={file.scriptInfo.properties.get(prop) ?? ""}
+                    readonly
+                />
+            </div>
+        </div>
+    {/each}
+</div>
+
+<div class="file-section boxed">
+    <div class="section-title">Estilos</div>
+
+    {#each file.styles.styles as style}
+        <div class="field">
+            <label class="label" for="">{style.name}</label>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    value={asu.styleToString(style)}
+                    readonly
+                />
+            </div>
+        </div>
+    {/each}
+</div>
+
+<div class="file-section boxed">
+    <div class="section-title">Subtítulos</div>
+
+    {#each file.events.lines as linea, indexLinea}
+        <div class="linea">
+            <span class="numero-linea">{indexLinea + 1}</span>
+            <SubsArea kind="readonly" rawMode={false} text={linea.content}
+            ></SubsArea>
+        </div>
+    {/each}
+</div>
+
+<style>
+    .linea {
+        display: grid;
+        grid-template-columns: 6% auto;
+    }
+
+    .numero-linea {
+        text-align: center;
+    }
+
+    .file-section {
+        margin-top: 1rem;
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: large;
+    }
+</style>
