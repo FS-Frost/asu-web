@@ -7,10 +7,15 @@
         type SubtitleError,
         detectSubtitlesMode,
     } from "$lib/validateSubtitles";
-    import { loadOptions, Options } from "./validarDialogosOptions";
+    import {
+        loadOptions,
+        Options,
+        saveOptions,
+    } from "./validarDialogosOptions";
     import { onMount, tick } from "svelte";
     import FileError from "./FileError.svelte";
     import ModalOptions from "./ModalOptions.svelte";
+    import Swal from "sweetalert2";
 
     const title: string = text.validarDialogos;
 
@@ -33,6 +38,8 @@
     let modalOptions = $state<ModalOptions>();
 
     async function handleFiles(): Promise<void> {
+        const geminiEnabled = options.geminiEnabled;
+
         try {
             if (options.geminiEnabled && options.geminiApiKey === "") {
                 alert("Ingrese el API KEY de Google Gemini.");
@@ -41,12 +48,25 @@
             }
 
             if (options.geminiEnabled) {
-                const doContinue = confirm(
-                    "Google Gemini habilitado. ¿Continuar?",
-                );
+                const html = `
+                    <img
+                        src="img/sakura.gif"
+                        alt="Cardcaptor Sakura"
+                        title="Cardcaptor Sakura"
+                        style="height: 16rem"
+                    />
+                `;
 
-                if (!doContinue) {
-                    return;
+                const swalResult = await Swal.fire({
+                    title: "Google Gemini habilitado. ¿Continuar?",
+                    confirmButtonText: "Continuar",
+                    cancelButtonText: "Continuar sin Google Gemini",
+                    showCancelButton: true,
+                    html: html,
+                });
+
+                if (!swalResult.isConfirmed) {
+                    options.geminiEnabled = false;
                 }
             }
 
@@ -90,6 +110,7 @@
         } catch (error) {
             console.error("error al procesar archivos", error);
         } finally {
+            options.geminiEnabled = geminiEnabled;
             if (inputFiles != null) {
                 inputFiles.value = "";
             }
@@ -121,6 +142,42 @@
         element.scrollIntoView({
             behavior: "smooth",
         });
+    }
+
+    function downloadResults(): void {
+        let text = `Archivos: ${results.length}`;
+
+        for (const result of results) {
+            text += `\n`;
+            text += `\n======================================================================`;
+            text += `\n${result.fileName}:`;
+            text += `\nErrores: ${result.errors.length}`;
+            text += `\nAdvertencias: ${result.warnings.length}`;
+
+            for (const error of result.errors) {
+                text += `\n`;
+                text += `\nERROR: ${error.location}: ${error.error}`;
+                text += `\nTEXTO: ${error.text}`;
+            }
+
+            for (const warning of result.warnings) {
+                text += `\n`;
+                text += `\nADVERTENCIA: ${warning.location}: ${warning.error}`;
+                text += `\nTEXTO: ${warning.text}`;
+            }
+        }
+
+        const blob = new Blob([text], {
+            type: "plain/text",
+        });
+
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.download = "Resultados.txt";
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.click();
+        URL.revokeObjectURL(url);
     }
 
     onMount(() => {
@@ -216,6 +273,13 @@
     {/if}
 
     {#if !loading && results.length > 0}
+        <button
+            class="button is-secondary is-fullwidth mb-2"
+            onclick={downloadResults}
+        >
+            Descargar resultados
+        </button>
+
         <div class="result-info">
             <div
                 class="counter {totalErrors == 0

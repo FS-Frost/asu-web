@@ -2,6 +2,7 @@
     import Modal from "$lib/gui/Modal.svelte";
     import text from "$lib/text";
     import { SUBTITLE_MODES } from "$lib/validateSubtitles";
+    import Swal from "sweetalert2";
     import { Options, saveOptions } from "./validarDialogosOptions";
 
     type Props = {
@@ -20,13 +21,73 @@
         modal?.close();
     }
 
-    function resetSettings(): void {
-        const doContinue = confirm("¿Reiniciar configuración?");
-        if (!doContinue) {
+    async function sakujoSettings(): Promise<void> {
+        let html = `
+            <div
+                style="
+                    display: flex;
+                    position: relative;
+                    text-align: center;
+                    height: 16rem;
+                    overflow: hidden;
+                "
+            >
+                <p
+                    style="
+                        position: absolute;
+                        width: 100%;
+                        top: 2%;
+                        z-index: 2;
+                        color: white;
+                        text-shadow: 0.05rem 0.05rem 0.05rem black;
+                    "
+                >
+                    <i>Nota: "sakujo" significa eliminar.</i>
+                </p>
+
+                <img
+                    src="img/mikami-teru.gif"
+                    alt="Death Note"
+                    title="Death Note"
+                    style="
+                        position: absolute;
+                        height: 16rem;
+                    "
+                />
+            </div>
+        `;
+
+        const swalResult = await Swal.fire({
+            title: "¿Sakujo configuración?",
+            html: html,
+            confirmButtonText: "¡Sakujo!",
+            cancelButtonText: "Cancelar",
+            showCancelButton: true,
+            customClass: {
+                confirmButton: "swal2-deny",
+            },
+        });
+
+        if (!swalResult.isConfirmed) {
             return;
         }
 
         options = Options.parse({});
+
+        html = `
+            <img
+                src="img/lelouch.gif"
+                alt="Code Geass"
+                title="Code Geass"
+                style="height: 16rem"
+            />
+        `;
+
+        await Swal.fire({
+            title: "Configuración sakujeada",
+            html: html,
+            confirmButtonText: "Volver",
+        });
     }
 </script>
 
@@ -38,9 +99,9 @@
 >
     <button
         class="button is-danger is-outlined is-fullwidth mb-2"
-        onclick={resetSettings}
+        onclick={sakujoSettings}
     >
-        Reiniciar configuración
+        Sakujo configuración
     </button>
 
     <div class="select is-fullwidth mb-2">
