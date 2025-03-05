@@ -4,7 +4,7 @@
     "": {
       "name": "asu-web",
       "dependencies": {
-        "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.8.0",
+        "@fs-frost/asu": "npm:@jsr/fs-frost__asu@1.9.0",
         "@google/generative-ai": "^0.21.0",
         "sweetalert2": "^11.17.2",
         "zod": "^3.24.1",
@@ -71,7 +71,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.21.5", "", { "os": "win32", "cpu": "x64" }, "sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw=="],
 
-    "@fs-frost/asu": ["@jsr/fs-frost__asu@1.8.0", "https://npm.jsr.io/~/11/@jsr/fs-frost__asu/1.8.0.tgz", { "dependencies": { "magic-regexp": "^0.7.0", "zod": "^3.24.2" } }, "sha512-tWl6IxW+biOMLmQWJo4LuAaM5ZOmmDqD37YLkwn9kTdl9Dpv33frBET8HkJrMzmdRKLwniMkWEQax5b7wFjuSA=="],
+    "@fs-frost/asu": ["@jsr/fs-frost__asu@1.9.0", "https://npm.jsr.io/~/11/@jsr/fs-frost__asu/1.9.0.tgz", { "dependencies": { "magic-regexp": "^0.7.0", "zod": "^3.24.2" } }, "sha512-2y2FK0Th3nbxuhMY8n8WuyjmdGhSDJaNbQnL22uakOxdL/maq53zsI6o2NqWaGJKuOrYEKbur35oofJg7+srtw=="],
 
     "@google/generative-ai": ["@google/generative-ai@0.21.0", "", {}, "sha512-7XhUbtnlkSEZK15kN3t+tzIMxsbKm/dSkKBFalj+20NvPKe1kBY7mR2P7vuijEn+f06z5+A8bVGKO0v39cr6Wg=="],
 
