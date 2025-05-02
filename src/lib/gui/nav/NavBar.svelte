@@ -5,8 +5,6 @@
         BuildInfo,
         buildInfoStore,
         generateBranchLink,
-        generateCommitLink,
-        generateShortSha,
     } from "$lib/buildInfo";
     import text from "$lib/text";
 

@@ -62,7 +62,7 @@
             </tr>
         </thead>
         <tbody>
-            {#each file.events.lines as linea, indexLinea}
+            {#each file.events.lines as linea, indexLinea (new Date())}
                 <tr>
                     <td>{indexLinea + 1}</td>
                     <td>{asu.timeToString(linea.start)}</td>

@@ -7,15 +7,13 @@
         type SubtitleError,
         detectSubtitlesMode,
     } from "$lib/validateSubtitles";
-    import {
-        loadOptions,
-        Options,
-        saveOptions,
-    } from "./validarDialogosOptions";
+    import { loadOptions, Options } from "./validarDialogosOptions";
     import { onMount, tick } from "svelte";
     import FileError from "./FileError.svelte";
     import ModalOptions from "./ModalOptions.svelte";
     import Swal from "sweetalert2";
+    import { descargarSubsEjemplo } from "$lib/subs";
+    import { downloadBlob } from "$lib/utils";
 
     const title: string = text.validarDialogos;
 
@@ -171,13 +169,7 @@
             type: "plain/text",
         });
 
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.download = "Resultados.txt";
-        anchor.href = url;
-        anchor.target = "_blank";
-        anchor.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(blob, "Resultados.txt");
     }
 
     onMount(() => {
@@ -197,7 +189,7 @@
             class="button is-link mb-2 btn-settings is-fullwidth"
             onclick={() => modalOptions?.open()}
         >
-            Configuración
+            Ver configuración
         </button>
 
         <div class="options-info">
@@ -234,6 +226,13 @@
             {/if}
         </div>
     </div>
+
+    <button
+        class="button mb-2 btn-example is-fullwidth"
+        onclick={descargarSubsEjemplo}
+    >
+        Descargar subtítulos de ejemplo
+    </button>
 
     <div class="file is-fullwidth mb-2">
         <label class="file-label">
@@ -505,7 +504,17 @@
         grid-template-columns: auto auto auto;
     }
 
+    .options-info span {
+        text-wrap: auto;
+        height: 3rem;
+        text-align: center;
+    }
+
     .btn-settings {
         height: fit-content;
+    }
+
+    .btn-example {
+        justify-content: left;
     }
 </style>

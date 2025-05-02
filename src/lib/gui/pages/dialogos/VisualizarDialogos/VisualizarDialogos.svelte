@@ -2,6 +2,7 @@
     import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
     import Editor from "./Editor.svelte";
+    import { descargarSubsEjemplo } from "$lib/subs";
 
     const title: string = text.visualizarDialogos;
 
@@ -39,6 +40,13 @@
 <section class="editor-dialogos">
     <h1>{title}</h1>
 
+    <button
+        class="button mb-2 btn-example is-fullwidth"
+        onclick={descargarSubsEjemplo}
+    >
+        Descargar subtítulos de ejemplo
+    </button>
+
     <div class="file is-fullwidth mb-2">
         <label class="file-label">
             <input
@@ -71,5 +79,17 @@
 
     .loaded-file {
         font-weight: bold;
+    }
+
+    .file {
+        margin: 0;
+    }
+
+    .file-cta {
+        width: 100%;
+    }
+
+    .btn-example {
+        justify-content: left;
     }
 </style>
