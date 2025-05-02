@@ -91,6 +91,12 @@
         gap: 0.5rem;
     }
 
+    @media only screen and (max-width: 600px) {
+        .area.with-options {
+            grid-template-columns: unset;
+        }
+    }
+
     .area.without-options {
         display: grid;
         grid-template-columns: auto;

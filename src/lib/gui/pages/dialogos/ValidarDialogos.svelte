@@ -420,6 +420,12 @@
         grid-template-columns: auto auto auto;
     }
 
+    @media only screen and (max-width: 600px) {
+        .result-info {
+            grid-template-columns: unset;
+        }
+    }
+
     .image-container {
         display: flex;
         justify-content: center;

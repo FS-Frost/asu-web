@@ -7,10 +7,21 @@
         generateBranchLink,
     } from "$lib/buildInfo";
     import text from "$lib/text";
+    import { activePageStore } from "$lib/activePage";
 
     let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
     let navMenu = $state<HTMLElement>();
     let navToggle = $state<HTMLElement>();
+
+    function closeMenu(): void {
+        if (navToggle) {
+            navToggle.classList.remove("is-active");
+        }
+
+        if (navMenu) {
+            navMenu.classList.remove("is-active");
+        }
+    }
 
     function toggleMenu(): void {
         if (navToggle) {
@@ -29,6 +40,14 @@
             }
 
             buildInfo = value;
+        });
+
+        activePageStore.subscribe((value) => {
+            if (value == null) {
+                return;
+            }
+
+            closeMenu();
         });
     });
 </script>
