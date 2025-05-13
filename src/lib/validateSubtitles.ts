@@ -372,10 +372,10 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
         }
 
         const systemInstruction = `
-            Valida todos los textos que recibas.
-            Considera '\N' como un espacio ' '.
+            Valida todos los textos que recibas en busca de errores ortográficos.
+            Debes ser extremadamente minucioso al detectar errores.
+            Considera '\\N' como un espacio ' '.
             Ignora los espacios consecutivos, no son errores.
-            Considera como errores sólo las faltas ortográficas graves.
             Frases vulgares, de uso poco común o muletillas están bien.
         `;
 
