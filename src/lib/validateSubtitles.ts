@@ -424,6 +424,8 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
             systemInstruction: systemInstruction,
         });
 
+        console.log(model.model);
+
         // https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters
         const generationConfig: GenerationConfig = {
             temperature: 1,
