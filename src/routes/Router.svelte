@@ -12,6 +12,7 @@
     import ValidarDialogos from "$lib/gui/pages/dialogos/ValidarDialogos.svelte";
     import AplicarTraslacion from "$lib/gui/pages/carteles/AplicarTraslacion.svelte";
     import VisualizarDialogos from "$lib/gui/pages/dialogos/VisualizarDialogos/VisualizarDialogos.svelte";
+    import EmparejarSilabas from "$lib/gui/pages/karaokes/EmparejarSilabas.svelte";
 
     let page = $state<ActivePage | "">("");
 
@@ -51,6 +52,8 @@
     <DividirKaraoke />
 {:else if page == "karaokes.dividirSilabas"}
     <DividirSilabas />
+{:else if page == "karaokes.emparejarSilabas"}
+    <EmparejarSilabas />
 {:else if page == "acercaDe"}
     <AcercaDe />
 {/if}

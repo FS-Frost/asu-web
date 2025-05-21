@@ -135,6 +135,11 @@
                         text={text.dividirSilabas}
                         page="karaokes.dividirSilabas"
                     />
+
+                    <NavItem
+                        text={text.emparejarSilabas}
+                        page="karaokes.emparejarSilabas"
+                    />
                 </div>
             </div>
 

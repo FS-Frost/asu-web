@@ -11,6 +11,7 @@ const pagesKeys = <const>[
     "dialogos.validarDialogos",
     "karaokes.dividirKaraoke",
     "karaokes.dividirSilabas",
+    "karaokes.emparejarSilabas",
     "acercaDe",
 ];
 

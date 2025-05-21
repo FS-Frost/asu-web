@@ -9,6 +9,7 @@ export default {
     copiarMovimiento: "Copiar movimiento",
     dividirKaraoke: "Dividir karaoke",
     dividirSilabas: "Dividir sílabas",
+    emparejarSilabas: "Emparejar sílabas",
     lineasCopiadas: "¡Líneas copiadas al portapapeles!",
     resultado: "Resultado",
     subtitulos: "Subtítulos",
