@@ -60,133 +60,147 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
     let totalKaraokeLines = 0;
     let llmText = "";
 
-    for (let i = 0; i < file.events.lines.length; i++) {
-        const line = file.events.lines[i];
-        const lineNumber = i + 1;
+    for (let eventIndex = 0; eventIndex < file.events.lines.length; eventIndex++) {
+        const lineNumber = eventIndex + 1;
+        const currentLine = file.events.lines[eventIndex];
+        const actorLines = splitMultipleActorsDialogue(currentLine);
+        const lineWasSplitted = actorLines.length > 1;
 
-        if (
-            subtitleMode === "automático" &&
-            line.effect.includes("template syl")
-        ) {
-            console.info(
-                `template syl detectado en línea ${lineNumber}, pasando a modo karaokes`,
+        for (let lineIndex = 0; lineIndex < actorLines.length; lineIndex++) {
+            const line = actorLines[lineIndex];
+
+            if (
+                subtitleMode === "automático" &&
+                line.effect.includes("template syl")
+            ) {
+                console.info(
+                    `template syl detectado en línea ${lineNumber}, pasando a modo karaokes`,
+                );
+
+                subtitleMode = "karaokes";
+                continue;
+            }
+
+            if (
+                subtitleMode == "diálogos" &&
+                line.type == asu.LINE_TYPE_COMMENT
+            ) {
+                continue;
+            }
+
+            if (line.content === "") {
+                continue;
+            }
+
+            if (subtitleMode === "karaokes" && line.style !== targetStyleKaraoke) {
+                continue;
+            }
+
+            if (
+                subtitleMode === "karaokes" &&
+                line.type !== asu.LINE_TYPE_COMMENT
+            ) {
+                continue;
+            }
+
+            if (subtitleMode === "karaokes" && line.effect !== "karaoke") {
+                continue;
+            }
+
+            if (subtitleMode === "karaokes" && line.effect === "fx") {
+                break;
+            }
+
+            const ignoreList: string[] = line.effect
+                .split(" ")
+                .filter((x) => x.startsWith("ignorar-"));
+
+            if (ignoreList.includes("ignorar-linea")) {
+                continue;
+            }
+
+            if (
+                options.validateLineStyleExists &&
+                !ignoreList.includes("ignorar-estilo") &&
+                !fileHasStyle(file, line.style)
+            ) {
+                validationResult.errors.push({
+                    location: `Línea ${lineNumber}`,
+                    error: `Estilo no encontrado`,
+                    text: line.style,
+                    ignoreRule: "ignorar-estilo",
+                });
+            }
+
+            const items = asu.parseContent(line.content);
+            let text = asu.contentsToString(
+                items.filter((item) => item.name === "text"),
             );
 
-            subtitleMode = "karaokes";
-            continue;
-        }
+            if (options.geminiEnabled && subtitleMode === "diálogos") {
+                const sanitizedText = sanitizeDialogue(text);
+                let llmLineNumber = lineNumber.toString();
 
-        if (
-            subtitleMode == "diálogos" &&
-            line.type == asu.LINE_TYPE_COMMENT
-        ) {
-            continue;
-        }
+                if (lineWasSplitted) {
+                    const splitNumber = lineIndex + 1;
+                    llmLineNumber += ` parte ${splitNumber}`;
+                    console.log({ split: sanitizedText, lineNumber, splitNumber });
+                }
 
-        if (line.content === "") {
-            continue;
-        }
-
-        if (subtitleMode === "karaokes" && line.style !== targetStyleKaraoke) {
-            continue;
-        }
-
-        if (
-            subtitleMode === "karaokes" &&
-            line.type !== asu.LINE_TYPE_COMMENT
-        ) {
-            continue;
-        }
-
-        if (subtitleMode === "karaokes" && line.effect !== "karaoke") {
-            continue;
-        }
-
-        if (subtitleMode === "karaokes" && line.effect === "fx") {
-            break;
-        }
-
-        const ignoreList: string[] = line.effect
-            .split(" ")
-            .filter((x) => x.startsWith("ignorar-"));
-
-        if (ignoreList.includes("ignorar-linea")) {
-            continue;
-        }
-
-        if (
-            options.validateLineStyleExists &&
-            !ignoreList.includes("ignorar-estilo") &&
-            !fileHasStyle(file, line.style)
-        ) {
-            validationResult.errors.push({
-                location: `Línea ${lineNumber}`,
-                error: `Estilo no encontrado`,
-                text: line.style,
-                ignoreRule: "ignorar-estilo",
-            });
-        }
-
-        const items = asu.parseContent(line.content);
-        let text = asu.contentsToString(
-            items.filter((item) => item.name === "text"),
-        );
-
-        if (options.geminiEnabled && subtitleMode === "diálogos") {
-            const sanitizedText = sanitizeDialogue(text);
-            llmText += `\nLínea ${lineNumber}: ${sanitizedText}`;
-        }
-
-        if (options.validateTextStart && !ignoreList.includes("ignorar-inicio")) {
-            const errorMessage = validateDialogueStart(text);
-            if (errorMessage != null) {
-                validationResult.errors.push({
-                    location: `Línea ${lineNumber}`,
-                    error: errorMessage,
-                    text: line.content,
-                    ignoreRule: "ignorar-inicio",
-                });
+                llmText += `\nLínea ${llmLineNumber}: ${sanitizedText}`;
             }
-        }
 
-        if (options.validateTextSpaces && !ignoreList.includes("ignorar-espacios")) {
-            const errorMessage = validateDialogueMultipleSpaces(text);
-            if (errorMessage != null) {
-                validationResult.errors.push({
-                    location: `Línea ${lineNumber}`,
-                    error: errorMessage,
-                    text: line.content,
-                    ignoreRule: "ignorar-espacios",
-                });
+            if (options.validateTextStart && !ignoreList.includes("ignorar-inicio")) {
+                const errorMessage = validateDialogueStart(text);
+                if (errorMessage != null) {
+                    validationResult.errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-inicio",
+                    });
+                }
             }
-        }
 
-        if (options.validateTextEnd && !ignoreList.includes("ignorar-fin")) {
-            const errorMessage = validateDialogueEnd(text);
-            if (errorMessage != null) {
-                validationResult.errors.push({
-                    location: `Línea ${lineNumber}`,
-                    error: errorMessage,
-                    text: line.content,
-                    ignoreRule: "ignorar-fin",
-                });
+            if (options.validateTextSpaces && !ignoreList.includes("ignorar-espacios")) {
+                const errorMessage = validateDialogueMultipleSpaces(text);
+                if (errorMessage != null) {
+                    validationResult.errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-espacios",
+                    });
+                }
             }
-        }
 
-        if (options.validateTextPunctuation && !ignoreList.includes("ignorar-puntuacion")) {
-            const errorMessage = validateDialoguePunctuation(text);
-            if (errorMessage != null) {
-                validationResult.errors.push({
-                    location: `Línea ${lineNumber}`,
-                    error: errorMessage,
-                    text: line.content,
-                    ignoreRule: "ignorar-puntuacion",
-                });
+            if (options.validateTextEnd && !ignoreList.includes("ignorar-fin")) {
+                const errorMessage = validateDialogueEnd(text);
+                if (errorMessage != null) {
+                    validationResult.errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-fin",
+                    });
+                }
             }
-        }
 
-        if (subtitleMode === "karaokes") {
-            totalKaraokeLines++;
+            if (options.validateTextPunctuation && !ignoreList.includes("ignorar-puntuacion")) {
+                const errorMessage = validateDialoguePunctuation(text);
+                if (errorMessage != null) {
+                    validationResult.errors.push({
+                        location: `Línea ${lineNumber}`,
+                        error: errorMessage,
+                        text: line.content,
+                        ignoreRule: "ignorar-puntuacion",
+                    });
+                }
+            }
+
+            if (subtitleMode === "karaokes") {
+                totalKaraokeLines++;
+            }
         }
     }
 
@@ -226,6 +240,30 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
     }
 
     return validationResult;
+}
+
+export function splitMultipleActorsDialogue(line: asu.Line): asu.Line[] {
+    const regexHasMultipleActors = /\s*-\s([^\\]+)\\N\s*-\s([^\\]+)/;
+    if (!regexHasMultipleActors.test(line.content)) {
+        return [line];
+    }
+
+    const matches = line.content.match(regexHasMultipleActors);
+    if (matches?.length !== 3) {
+        return [line];
+    }
+
+    const lines: asu.Line[] = [];
+    for (let i = 1; i <= 2; i++) {
+        let contentSplit = matches.at(i) ?? "";
+        contentSplit = contentSplit.trim();
+
+        const lineSplit: asu.Line = { ...line };
+        lineSplit.content = contentSplit;
+        lines.push(lineSplit);
+    }
+
+    return lines;
 }
 
 export function validateDialogueStart(text: string): string | null {
@@ -459,7 +497,7 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
 }
 
 export function sanitizeDialogue(text: string): string {
-    let newText = "";
+    let sanitizedText = "";
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
         const nextChar1 = text[i + 1] ?? "";
@@ -480,12 +518,12 @@ export function sanitizeDialogue(text: string): string {
             }
 
             // "\N"
-            newText += " ";
+            sanitizedText += " ";
             continue;
         }
 
-        newText += char;
+        sanitizedText += char;
     }
 
-    return newText;
+    return sanitizedText;
 }

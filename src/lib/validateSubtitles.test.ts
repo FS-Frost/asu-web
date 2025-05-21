@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { fileHasStyle, validateDialogueEnd, validateDialogueMultipleSpaces, validateDialoguePunctuation, validateDialogueStart } from "./validateSubtitles";
+import { fileHasStyle, splitMultipleActorsDialogue, validateDialogueEnd, validateDialogueMultipleSpaces, validateDialoguePunctuation, validateDialogueStart } from "./validateSubtitles";
 import * as asu from "@fs-frost/asu";
 
 test("dialogue multiple spaces", () => {
@@ -127,4 +127,14 @@ test("dialogue has style", () => {
     file.styles.styles.push(asu.generateDefaultStyle());
     styleExists = fileHasStyle(file, "Default");
     expect(styleExists).toBeTrue();
+});
+
+test("multiple actors dialogue", () => {
+    const line = asu.generateDefaultLine();
+    line.content = "- ¡Con permiso!\\N- ¡Kyaaaa!";
+    const lines = splitMultipleActorsDialogue(line);
+    expect(lines).toHaveLength(2);
+
+    expect(lines[0].content).toBe("¡Con permiso!");
+    expect(lines[1].content).toBe("¡Kyaaaa!");
 });
