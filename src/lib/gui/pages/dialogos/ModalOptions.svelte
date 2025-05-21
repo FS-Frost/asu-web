@@ -3,7 +3,11 @@
     import text from "$lib/text";
     import { SUBTITLE_MODES } from "$lib/validateSubtitles";
     import Swal from "sweetalert2";
-    import { Options, saveOptions } from "./validarDialogosOptions";
+    import {
+        GEMINI_MODELS,
+        Options,
+        saveOptions,
+    } from "./validarDialogosOptions";
 
     type Props = {
         options: Options;
@@ -119,6 +123,14 @@
         </label>
 
         {#if options.geminiEnabled}
+            <div class="select is-fullwidth mb-2">
+                <select bind:value={options.geminiModel}>
+                    {#each GEMINI_MODELS as model}
+                        <option value={model}>{model}</option>
+                    {/each}
+                </select>
+            </div>
+
             <div class="field">
                 <label class="label" for="">API KEY</label>
                 <div class="control">

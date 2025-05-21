@@ -198,7 +198,9 @@
             </span>
 
             {#if options.geminiEnabled}
-                <span class="tag is-dark"> {text.validateWithGemini}</span>
+                <span class="tag is-dark">
+                    {text.validateWithGemini}: {options.geminiModel}
+                </span>
             {/if}
 
             {#if options.validateLineStyleExists}
@@ -514,6 +516,12 @@
         text-wrap: auto;
         height: 3rem;
         text-align: center;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .options-info span {
+            font-size: x-small;
+        }
     }
 
     .btn-settings {

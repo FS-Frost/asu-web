@@ -209,7 +209,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
         options.geminiApiKey !== "" &&
         subtitleMode === "diálogos"
     ) {
-        const result = await validateSubtitleWithGemini(llmText, options.geminiApiKey);
+        const result = await validateSubtitleWithGemini(llmText, options.geminiModel, options.geminiApiKey);
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
             if (line == null) {
@@ -396,7 +396,7 @@ const GeminiValidation = z.object({
 
 type GeminiValidation = z.infer<typeof GeminiValidation>;
 
-export async function validateSubtitleWithGemini(input: string, geminiApiKey: string): Promise<GeminiValidation> {
+export async function validateSubtitleWithGemini(input: string, geminiModel: string, geminiApiKey: string): Promise<GeminiValidation> {
     let rawResponse = "";
 
     try {
@@ -419,8 +419,14 @@ export async function validateSubtitleWithGemini(input: string, geminiApiKey: st
 
         const genAI = new GoogleGenerativeAI(geminiApiKey);
 
+        if (geminiModel == "") {
+            const defaultModel = "gemini-2.0-flash";
+            console.warn("empty gemini model, using default:", defaultModel);
+            geminiModel = defaultModel;
+        }
+
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: geminiModel,
             systemInstruction: systemInstruction,
         });
 
