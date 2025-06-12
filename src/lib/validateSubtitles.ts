@@ -92,7 +92,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
                 continue;
             }
 
-            if (subtitleMode === "karaokes" && line.style !== targetStyleKaraoke) {
+            if (subtitleMode === "karaokes" && !line.style.toLowerCase().includes(targetStyleKaraoke.toLowerCase())) {
                 continue;
             }
 
