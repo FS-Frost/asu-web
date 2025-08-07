@@ -22,7 +22,7 @@ type ValidationResult = {
     warnings: SubtitleError[],
 };
 
-export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile, options: Options): Promise<ValidationResult> {
+export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.ASSFile, options: Options): Promise<ValidationResult> {
     const validationResult: ValidationResult = {
         errors: [],
         warnings: [],
@@ -57,6 +57,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
     }
 
     const targetStyleKaraoke = "Español";
+    const geminiTargetModes: SubtitleMode[] = ["diálogos", "karaokes"];
     let totalKaraokeLines = 0;
     let llmText = "";
 
@@ -137,7 +138,7 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
                 items.filter((item) => item.name === "text"),
             );
 
-            if (options.geminiEnabled && subtitleMode === "diálogos") {
+            if (options.geminiEnabled && geminiTargetModes.includes(subtitleMode)) {
                 const sanitizedText = sanitizeDialogue(text);
                 let llmLineNumber = lineNumber.toString();
 
@@ -207,8 +208,9 @@ export async function validateSubtitles(subtitleMode: string, file: asu.ASSFile,
     if (
         options.geminiEnabled &&
         options.geminiApiKey !== "" &&
-        subtitleMode === "diálogos"
+        geminiTargetModes.includes(subtitleMode)
     ) {
+        console.log(llmText);
         const result = await validateSubtitleWithGemini(llmText, options.geminiModel, options.geminiApiKey);
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
