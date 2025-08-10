@@ -304,6 +304,14 @@ export function validateDialogueEnd(text: string): string | null {
         return `No tiene un fin de línea válido: ${validSufixes.map((x) => `"${x}"`).join(", ")}`;
     }
 
+    const endsInDot = text.endsWith(".");
+    const regexDot = /[^.]\.$/;
+    const regexTripleDot = /[^.]\.{3}$/;
+
+    if (endsInDot && !regexDot.test(text) && !regexTripleDot.test(text)) {
+        return `Cantidad inválida de puntos finales`;
+    }
+
     return null;
 }
 

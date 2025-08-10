@@ -47,6 +47,10 @@ test("dialogue end", () => {
     error = validateDialogueEnd(text);
     expect(error).toBeEmpty();
 
+    text = "En serio..";
+    error = validateDialogueEnd(text);
+    expect(error).not.toBeEmpty();
+
     text = "En serio,";
     error = validateDialogueEnd(text);
     expect(error).toBeEmpty();
