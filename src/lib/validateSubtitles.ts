@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI, SchemaType, type GenerationConfig } from "@google/generative-ai";
 import * as asu from "@fs-frost/asu";
-import { trimEnd } from "./strings";
+import { trimEnd, trimSpacesAndEmptyLines, trimStart } from "./strings";
 import { z } from "zod";
-import type { Options } from "./gui/pages/dialogos/validarDialogosOptions";
+import type { GeminiModel, Options } from "./gui/pages/dialogos/validarDialogosOptions";
 
 export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
 
@@ -18,12 +18,14 @@ export type SubtitleError = {
 };
 
 type ValidationResult = {
-    errors: SubtitleError[],
-    warnings: SubtitleError[],
+    promt: string;
+    errors: SubtitleError[];
+    warnings: SubtitleError[];
 };
 
 export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.ASSFile, options: Options): Promise<ValidationResult> {
     const validationResult: ValidationResult = {
+        promt: "",
         errors: [],
         warnings: [],
     };
@@ -59,7 +61,6 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
     const targetStyleKaraoke = "Español";
     const geminiTargetModes: SubtitleMode[] = ["diálogos", "karaokes"];
     let totalKaraokeLines = 0;
-    let llmText = "";
 
     for (let eventIndex = 0; eventIndex < file.events.lines.length; eventIndex++) {
         const lineNumber = eventIndex + 1;
@@ -138,7 +139,7 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
                 items.filter((item) => item.name === "text"),
             );
 
-            if (options.geminiEnabled && geminiTargetModes.includes(subtitleMode)) {
+            if (geminiTargetModes.includes(subtitleMode)) {
                 const sanitizedText = sanitizeDialogue(text);
                 let llmLineNumber = lineNumber.toString();
 
@@ -148,7 +149,7 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
                     console.log({ split: sanitizedText, lineNumber, splitNumber });
                 }
 
-                llmText += `\nLínea ${llmLineNumber}: ${sanitizedText}`;
+                validationResult.promt += `\nLínea ${llmLineNumber}: ${sanitizedText}`;
             }
 
             if (options.validateTextStart && !ignoreList.includes("ignorar-inicio")) {
@@ -210,8 +211,8 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
         options.geminiApiKey !== "" &&
         geminiTargetModes.includes(subtitleMode)
     ) {
-        console.log(llmText);
-        const result = await validateSubtitleWithGemini(llmText, options.geminiModel, options.geminiApiKey);
+        console.log(validationResult.promt);
+        const result = await validateSubtitleWithGemini(validationResult.promt, options.geminiModel, options.geminiApiKey);
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
             if (line == null) {
@@ -240,6 +241,9 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
             ignoreRule: "",
         });
     }
+
+    validationResult.promt = SYSTEM_INSTRUCTION + validationResult.promt;
+    validationResult.promt = trimSpacesAndEmptyLines(validationResult.promt);
 
     return validationResult;
 }
@@ -406,7 +410,15 @@ const GeminiValidation = z.object({
 
 type GeminiValidation = z.infer<typeof GeminiValidation>;
 
-export async function validateSubtitleWithGemini(input: string, geminiModel: string, geminiApiKey: string): Promise<GeminiValidation> {
+export const SYSTEM_INSTRUCTION: string = `
+    Valida todos los textos que recibas en busca de errores ortográficos.
+    Debes ser extremadamente minucioso al detectar errores.
+    Considera '\\N' como un espacio ' '.
+    Ignora los espacios consecutivos, no son errores.
+    Frases vulgares, de uso poco común o muletillas están bien.
+`;
+
+export async function validateSubtitleWithGemini(input: string, geminiModel: GeminiModel, geminiApiKey: string): Promise<GeminiValidation> {
     let rawResponse = "";
 
     try {
@@ -419,25 +431,11 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: str
             }
         }
 
-        const systemInstruction = `
-            Valida todos los textos que recibas en busca de errores ortográficos.
-            Debes ser extremadamente minucioso al detectar errores.
-            Considera '\\N' como un espacio ' '.
-            Ignora los espacios consecutivos, no son errores.
-            Frases vulgares, de uso poco común o muletillas están bien.
-        `;
-
         const genAI = new GoogleGenerativeAI(geminiApiKey);
-
-        if (geminiModel == "") {
-            const defaultModel = "gemini-2.0-flash";
-            console.warn("empty gemini model, using default:", defaultModel);
-            geminiModel = defaultModel;
-        }
 
         const model = genAI.getGenerativeModel({
             model: geminiModel,
-            systemInstruction: systemInstruction,
+            systemInstruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
         });
 
         console.log(model.model);
@@ -481,6 +479,7 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: str
         });
 
         const result = await chatSession.sendMessage(input);
+        console.log({ result });
         rawResponse = result.response.text();
         const geminiValidation = GeminiValidation.parse(JSON.parse(rawResponse));
 

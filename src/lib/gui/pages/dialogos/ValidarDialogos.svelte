@@ -14,12 +14,14 @@
     import Swal from "sweetalert2";
     import { descargarSubsEjemplo } from "$lib/subs";
     import { downloadBlob } from "$lib/utils";
+    import Promt from "./Promt.svelte";
 
     const title: string = text.validarDialogos;
 
     type FileResult = {
         subsType: string;
         fileName: string;
+        promt: string;
         errors: SubtitleError[];
         warnings: SubtitleError[];
         errorsVisible: boolean;
@@ -99,6 +101,7 @@
                 results.push({
                     subsType: actualSubsMode,
                     fileName: file.name,
+                    promt: validationResult.promt,
                     errors: validationResult.errors,
                     warnings: validationResult.warnings,
                     errorsVisible: false,
@@ -404,6 +407,10 @@
                             </div>
                         {/if}
                     </div>
+                {/if}
+
+                {#if result.promt != ""}
+                    <Promt promt={result.promt}></Promt>
                 {/if}
             </div>
         {/each}
