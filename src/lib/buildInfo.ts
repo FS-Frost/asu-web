@@ -1,4 +1,3 @@
-import { writable } from 'svelte/store';
 import { z } from "zod";
 
 export const BuildInfo = z.object({
@@ -9,8 +8,6 @@ export const BuildInfo = z.object({
 });
 
 export type BuildInfo = z.infer<typeof BuildInfo>;
-
-export const buildInfoStore = writable<BuildInfo>(BuildInfo.parse({}));
 
 export async function getBuildInfo(): Promise<BuildInfo> {
     const defaultBuildInfo = BuildInfo.parse({});

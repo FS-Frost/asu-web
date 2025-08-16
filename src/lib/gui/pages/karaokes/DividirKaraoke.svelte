@@ -12,7 +12,7 @@
     const title: string = text.dividirKaraoke;
 
     const placeholderKaraoke: string =
-        "Comment: 0,0:02:44.95,0:02:50.57,Romaji C,,0,0,0,karaoke,{\\kf32}ko{\\kf34}no {\\kf32}de{\\kf32}a{\\kf18}i {\\kf49}ga{\\kf31}{\\k0} {\\kf37}mi{\\kf31}n{\\kf34}na {\\kf19}wo {\\kf31}ka{\\kf34}e{\\kf63}ru {\\kf52}ka{\\kf33}na";
+        "Comment: 0,0:15:11.75,0:15:23.36,Romaji I,,0,0,0,karaoke,{\\k25}de{\\k19}ki{\\k20}te {\\k19}i{\\k37}na{\\k22}i{\\k20}n {\\k19}da{\\k19}ka{\\k28}ra{\\k31} {\\k29}ya{\\k28}sa{\\k37}shi{\\k40}ku {\\k40}o{\\k15}ko{\\k24}shi{\\k18}te {\\k275}ho{\\k29}{\\k88}shi{\\k279}i";
 
     let rawKaraoke = $state<string>(placeholderKaraoke);
     let previews = $state<string[]>([]);
@@ -22,6 +22,7 @@
     let errorMessage = $state<string>("");
 
     function processLines(): void {
+        $inspect(syls);
         const line = asu.parseLine(rawKaraoke);
         if (line == null) {
             return;
@@ -81,17 +82,20 @@
             i++
         ) {
             const syl = syls[i];
-            if (syl.centiseconds == null) {
+            $inspect(syl);
+            if (syl?.centiseconds == null) {
                 continue;
             }
 
             centisecondsSecondLine += syl.centiseconds;
         }
 
+        console.log({ centisecondsSecondLine });
+
         const itemsLine2 = items.slice(indexEnd);
         line.end = asu.secondsToTime(originalEndInSeconds);
         line.start = asu.secondsToTime(
-            originalEndInSeconds - centisecondsSecondLine / 100
+            originalEndInSeconds - centisecondsSecondLine / 100,
         );
 
         line.content = asu.contentsToString(itemsLine2);
@@ -150,7 +154,7 @@
                     x.name === asu.TagName.kLowerCase ||
                     x.name === asu.TagName.kUpperCase ||
                     x.name === asu.TagName.kf ||
-                    x.name === asu.TagName.ko
+                    x.name === asu.TagName.ko,
             );
 
             if (tagK == null) {
@@ -172,6 +176,7 @@
         }
 
         splitSylIndex = Math.floor(syls.length / 2);
+        splitSylIndex = 9;
         processLines();
         return syls;
     }

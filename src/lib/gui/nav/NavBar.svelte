@@ -1,13 +1,8 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import NavItem from "./NavItem.svelte";
-    import {
-        BuildInfo,
-        buildInfoStore,
-        generateBranchLink,
-    } from "$lib/buildInfo";
+    import { BuildInfo, generateBranchLink } from "$lib/buildInfo";
     import text from "$lib/text";
-    import { activePageStore } from "$lib/activePage";
+    import { appState } from "$lib/state.svelte";
 
     let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
     let navMenu = $state<HTMLElement>();
@@ -33,22 +28,8 @@
         }
     }
 
-    onMount(async () => {
-        buildInfoStore.subscribe((value) => {
-            if (value == null) {
-                return;
-            }
-
-            buildInfo = value;
-        });
-
-        activePageStore.subscribe((value) => {
-            if (value == null) {
-                return;
-            }
-
-            closeMenu();
-        });
+    $effect(() => {
+        appState.activePage && closeMenu();
     });
 </script>
 

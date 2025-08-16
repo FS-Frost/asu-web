@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { activePageStore, type ActivePage, isPage } from "$lib/activePage";
     import { onMount } from "svelte";
     import CopiarMovimiento from "$lib/gui/pages/carteles/CopiarMovimiento.svelte";
     import AcercaDe from "$lib/gui/pages/AcercaDe.svelte";
@@ -13,47 +12,41 @@
     import AplicarTraslacion from "$lib/gui/pages/carteles/AplicarTraslacion.svelte";
     import VisualizarDialogos from "$lib/gui/pages/dialogos/VisualizarDialogos/VisualizarDialogos.svelte";
     import EmparejarSilabas from "$lib/gui/pages/karaokes/EmparejarSilabas.svelte";
-
-    let page = $state<ActivePage | "">("");
+    import { appState } from "$lib/state.svelte";
+    import { Page } from "$lib/page";
 
     onMount(() => {
-        activePageStore.subscribe((newActivePage) => {
-            if (newActivePage == null) {
-                return;
-            }
-
-            page = newActivePage;
-        });
-
         const urlParams = new URLSearchParams(location.search);
         const rawUrlPage = urlParams.get("pagina") ?? "";
-        const urlPage: ActivePage = isPage(rawUrlPage) ? rawUrlPage : "inicio";
-        activePageStore.set(urlPage);
+        const parseResult = Page.safeParse(rawUrlPage);
+        if (parseResult.success) {
+            appState.activePage = parseResult.data;
+        }
     });
 </script>
 
-{#if page == "inicio"}
+{#if appState.activePage == "inicio"}
     <Inicio />
-{:else if page == "carteles.copiarMovimiento"}
+{:else if appState.activePage == "carteles.copiarMovimiento"}
     <CopiarMovimiento />
-{:else if page == "carteles.aplicarSecuenciaPosiciones"}
+{:else if appState.activePage == "carteles.aplicarSecuenciaPosiciones"}
     <AplicarSecuenciaPosiciones />
-{:else if page == "carteles.aplicarAlpha"}
+{:else if appState.activePage == "carteles.aplicarAlpha"}
     <AplicarAlpha />
-{:else if page == "carteles.aplicarColor"}
+{:else if appState.activePage == "carteles.aplicarColor"}
     <AplicarColor />
-{:else if page == "carteles.aplicarTraslacion"}
+{:else if appState.activePage == "carteles.aplicarTraslacion"}
     <AplicarTraslacion />
-{:else if page == "dialogos.visualizarDialogos"}
+{:else if appState.activePage == "dialogos.visualizarDialogos"}
     <VisualizarDialogos />
-{:else if page == "dialogos.validarDialogos"}
+{:else if appState.activePage == "dialogos.validarDialogos"}
     <ValidarDialogos />
-{:else if page == "karaokes.dividirKaraoke"}
+{:else if appState.activePage == "karaokes.dividirKaraoke"}
     <DividirKaraoke />
-{:else if page == "karaokes.dividirSilabas"}
+{:else if appState.activePage == "karaokes.dividirSilabas"}
     <DividirSilabas />
-{:else if page == "karaokes.emparejarSilabas"}
+{:else if appState.activePage == "karaokes.emparejarSilabas"}
     <EmparejarSilabas />
-{:else if page == "acercaDe"}
+{:else if appState.activePage == "acercaDe"}
     <AcercaDe />
 {/if}

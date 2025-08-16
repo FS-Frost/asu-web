@@ -1,31 +1,23 @@
 <script lang="ts">
-    import { activePageStore, type ActivePage } from "$lib/activePage";
-    import { onMount } from "svelte";
+    import type { Page } from "$lib/page";
+    import { appState } from "$lib/state.svelte";
 
     type Props = {
         text: string;
-        page: ActivePage;
+        page: Page;
     };
 
     let { text, page }: Props = $props();
 
-    let isActive = $state<boolean>(false);
-
-    function generateLink(page: ActivePage): string {
+    function generateLink(page: Page): string {
         return `?pagina=${page}`;
     }
-
-    onMount(() => {
-        activePageStore.subscribe((newActivePage) => {
-            isActive = page === newActivePage;
-        });
-    });
 </script>
 
 <a
-    class="navbar-item {isActive ? 'is-active' : ''}"
+    class="navbar-item {page === appState.activePage ? 'is-active' : ''}"
     href={generateLink(page)}
-    onclick={() => activePageStore.set(page)}
+    onclick={() => (appState.activePage = page)}
     title={text}
 >
     {text}

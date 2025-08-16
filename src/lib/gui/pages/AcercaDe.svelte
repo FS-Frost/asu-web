@@ -1,26 +1,9 @@
 <script lang="ts">
-    import {
-        BuildInfo,
-        buildInfoStore,
-        generateCommitLink,
-        generateShortSha,
-    } from "$lib/buildInfo";
+    import { generateCommitLink, generateShortSha } from "$lib/buildInfo";
+    import { appState } from "$lib/state.svelte";
     import text from "$lib/text";
-    import { onMount } from "svelte";
 
     const title: string = text.acercaDe;
-
-    let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
-
-    onMount(async () => {
-        buildInfoStore.subscribe((value) => {
-            if (value == null) {
-                return;
-            }
-
-            buildInfo = value;
-        });
-    });
 </script>
 
 <svelte:head>
@@ -34,17 +17,19 @@
         <img src="img/kagamin.gif" alt="Lucky Star" title="Lucky Star" />
     </div>
 
-    {#if buildInfo.sha != ""}
+    {#if appState.buildInfo.sha != ""}
         <span class="version">
             <a
                 href={generateCommitLink(
-                    buildInfo.actor,
-                    buildInfo.repo,
-                    buildInfo.sha,
+                    appState.buildInfo.actor,
+                    appState.buildInfo.repo,
+                    appState.buildInfo.sha,
                 )}
                 target="_blank"
             >
-                Versión {buildInfo.ref}.{generateShortSha(buildInfo.sha)}
+                Versión {appState.buildInfo.ref}.{generateShortSha(
+                    appState.buildInfo.sha,
+                )}
             </a>
         </span>
     {/if}

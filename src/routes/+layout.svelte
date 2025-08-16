@@ -3,13 +3,14 @@
     import { onMount } from "svelte";
     import "./styles.css";
     import * as asu from "@fs-frost/asu";
-    import { buildInfoStore, getBuildInfo } from "$lib/buildInfo";
+    import { appState } from "$lib/state.svelte";
+    import { getBuildInfo } from "$lib/buildInfo";
 
     onMount(async () => {
         window.asu = asu;
         console.log("window.asu", window.asu);
 
-        buildInfoStore.set(await getBuildInfo());
+        appState.buildInfo = await getBuildInfo();
     });
 </script>
 
