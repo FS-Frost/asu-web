@@ -36,6 +36,7 @@
     let loading = $state<boolean>(false);
     let options = $state<Options>(Options.parse({}));
     let modalOptions = $state<ModalOptions>();
+    let scrollingText = $state<string>("");
 
     async function handleFiles(): Promise<void> {
         const geminiEnabled = options.geminiEnabled;
@@ -89,6 +90,37 @@
                     options.userSubsMode,
                 );
 
+                const words: string[] = [];
+
+                for (const line of assFile.events.lines) {
+                    const items = asu.parseContent(line.content);
+
+                    let text = asu.contentsToString(
+                        items.filter((item) => item.name === "text"),
+                    );
+
+                    text = removeChars(text, [
+                        ",",
+                        ";",
+                        ".",
+                        "¡",
+                        "!",
+                        "¿",
+                        "?",
+                        "-",
+                        "\\N",
+                    ]);
+
+                    const lineWords = text.split(" ");
+                    words.push(...lineWords);
+                }
+
+                for (let i = 1; i <= 40; i++) {
+                    const wordIndex = randomInt(0, words.length - 1);
+                    const word = words[wordIndex];
+                    scrollingText += " " + word;
+                }
+
                 const validationResult = await validateSubtitles(
                     actualSubsMode,
                     assFile,
@@ -119,6 +151,20 @@
             loading = false;
             await scrollToResults();
         }
+    }
+
+    function removeChars(text: string, chars: string[]): string {
+        for (const char of chars) {
+            text = text.replaceAll(char, "");
+        }
+
+        return text;
+    }
+
+    function randomInt(min: number, max: number): number {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     function generateResultColorClass(result: FileResult): string {
@@ -263,13 +309,30 @@
         <div class="result-info">
             <div class="counter">PROCESANDO</div>
 
-            <div class="image-container">
-                <img
-                    class="result-image"
-                    src="img/nagato.gif"
-                    alt="Suzumiya Haruhi"
-                    title="Suzumiya Haruhi"
-                />
+            <div
+                style="
+                    display: flex;
+                    position: relative;
+                    text-align: center;
+                    height: 16rem;
+                    overflow: hidden;
+                "
+            >
+                <p class="marquee">
+                    <span>{scrollingText}</span>
+                </p>
+                <p class="marquee marquee2">
+                    <span>{scrollingText}</span>
+                </p>
+
+                <div class="image-container" style="width: 100%;">
+                    <img
+                        class="result-image"
+                        src="img/nagato.gif"
+                        alt="Suzumiya Haruhi"
+                        title="Suzumiya Haruhi"
+                    />
+                </div>
             </div>
 
             <div class="counter">SUBTÍTULOS</div>
@@ -537,5 +600,32 @@
 
     .btn-example {
         justify-content: left;
+    }
+
+    .marquee {
+        color: white;
+        margin: 0 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        position: absolute;
+    }
+
+    .marquee span {
+        display: inline-block;
+        padding-left: 100%;
+        animation: marquee 5s linear infinite;
+    }
+
+    .marquee2 span {
+        animation-delay: 2.5s;
+    }
+
+    @keyframes marquee {
+        0% {
+            transform: translate(0, 0);
+        }
+        100% {
+            transform: translate(-100%, 0);
+        }
     }
 </style>
