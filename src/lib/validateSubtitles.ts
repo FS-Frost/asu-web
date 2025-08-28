@@ -141,15 +141,15 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
 
             if (geminiTargetModes.includes(subtitleMode)) {
                 const sanitizedText = sanitizeDialogue(text);
-                let llmLineNumber = lineNumber.toString();
+                let promtLineNumber = lineNumber.toString();
 
                 if (lineWasSplitted) {
                     const splitNumber = lineIndex + 1;
-                    llmLineNumber += ` parte ${splitNumber}`;
+                    promtLineNumber += ` parte ${splitNumber}`;
                     console.log({ split: sanitizedText, lineNumber, splitNumber });
                 }
 
-                validationResult.promt += `\nLínea ${llmLineNumber}: ${sanitizedText}`;
+                validationResult.promt += `\nLínea ${promtLineNumber}: ${sanitizedText}`;
             }
 
             if (options.validateTextStart && !ignoreList.includes("ignorar-inicio")) {
@@ -460,7 +460,6 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Gem
                                 numeroLinea: {
                                     type: SchemaType.INTEGER,
                                     description: "número de la línea con error",
-                                    example: 2,
                                 },
                                 mensajeError: {
                                     type: SchemaType.STRING,
