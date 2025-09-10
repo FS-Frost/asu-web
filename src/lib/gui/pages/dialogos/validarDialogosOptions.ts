@@ -14,11 +14,14 @@ export type GeminiModel = z.infer<typeof GeminiModel>;
 
 export const DEFAULT_GEMINI_MODEL: GeminiModel = "gemini-2.5-flash-lite";
 
+export const DEFAULT_GEMINI_MAX_TOKENS: number = 65536;
+
 export const Options = z.object({
     userSubsMode: SubtitleMode.default("automático"),
     geminiEnabled: z.boolean().default(false),
     geminiApiKey: z.string().default(""),
     geminiModel: GeminiModel.default(DEFAULT_GEMINI_MODEL),
+    geminiMaxTokens: z.number().default(DEFAULT_GEMINI_MAX_TOKENS),
     validateLineStyleExists: z.boolean().default(true),
     validateTextStart: z.boolean().default(true),
     validateTextEnd: z.boolean().default(true),

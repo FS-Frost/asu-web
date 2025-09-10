@@ -123,6 +123,7 @@
         </label>
 
         {#if options.geminiEnabled}
+            <label class="label" for="">Modelo</label>
             <div class="select is-fullwidth mb-2">
                 <select bind:value={options.geminiModel}>
                     {#each GEMINI_MODELS as model}
@@ -131,28 +132,46 @@
                 </select>
             </div>
 
-            <div class="field">
-                <label class="label" for="">API KEY</label>
+            <div class="api-key boxed">
+                <div class="field">
+                    <label class="label" for="">API KEY</label>
+                    <div class="control">
+                        <input
+                            class="input"
+                            type="password"
+                            bind:value={options.geminiApiKey}
+                            placeholder="Ingresa tu API KEY"
+                        />
+                    </div>
+                </div>
+
+                <p>
+                    <a
+                        href="https://aistudio.google.com/apikey"
+                        target="_blank"
+                    >
+                        Clic aquí para obtener una API KEY.
+                    </a>
+                </p>
+
+                <p>
+                    Las validaciones de Google Gemini serán siempre advertencias
+                    debido a su tendencia a tener falsos positivos.
+                </p>
+            </div>
+
+            <div class="field mt-1">
+                <label class="label" for="">Tokens máximos</label>
                 <div class="control">
                     <input
                         class="input"
-                        type="password"
-                        bind:value={options.geminiApiKey}
-                        placeholder="Ingresa tu API KEY"
+                        type="number"
+                        min="0"
+                        step="512"
+                        bind:value={options.geminiMaxTokens}
                     />
                 </div>
             </div>
-
-            <p>
-                <a href="https://aistudio.google.com/apikey" target="_blank">
-                    Clic aquí para obtener una API KEY.
-                </a>
-            </p>
-
-            <p>
-                Las validaciones de Google Gemini serán siempre advertencias
-                debido a su tendencia a tener falsos positivos.
-            </p>
         {/if}
     </div>
 

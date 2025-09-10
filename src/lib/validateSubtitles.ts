@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, SchemaType, type GenerationConfig } from "@google/g
 import * as asu from "@fs-frost/asu";
 import { trimEnd, trimSpacesAndEmptyLines, trimStart } from "./strings";
 import { z } from "zod";
-import type { GeminiModel, Options } from "./gui/pages/dialogos/validarDialogosOptions";
+import { DEFAULT_GEMINI_MAX_TOKENS, type GeminiModel, type Options } from "./gui/pages/dialogos/validarDialogosOptions";
 
 export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
 
@@ -212,7 +212,7 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
         geminiTargetModes.includes(subtitleMode)
     ) {
         console.log(validationResult.promt);
-        const result = await validateSubtitleWithGemini(validationResult.promt, options.geminiModel, options.geminiApiKey);
+        const result = await validateSubtitleWithGemini(validationResult.promt, options.geminiModel, options.geminiApiKey, options.geminiMaxTokens);
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
             if (line == null) {
@@ -418,7 +418,7 @@ export const SYSTEM_INSTRUCTION: string = `
     Frases vulgares, de uso poco común o muletillas están bien.
 `;
 
-export async function validateSubtitleWithGemini(input: string, geminiModel: GeminiModel, geminiApiKey: string): Promise<GeminiValidation> {
+export async function validateSubtitleWithGemini(input: string, geminiModel: GeminiModel, geminiApiKey: string, maxTokens: number): Promise<GeminiValidation> {
     let rawResponse = "";
 
     try {
@@ -445,7 +445,7 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Gem
             temperature: 1,
             topP: 0.95,
             topK: 40,
-            maxOutputTokens: 8192,
+            maxOutputTokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
             responseMimeType: "application/json",
             responseSchema: {
                 type: SchemaType.OBJECT,
