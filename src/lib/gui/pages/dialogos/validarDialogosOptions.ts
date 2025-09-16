@@ -1,4 +1,4 @@
-import { SubtitleMode } from "$lib/validateSubtitles";
+import { SubtitleMode } from "$lib/subtitleMode";
 import { z } from "zod";
 
 /** https://ai.google.dev/gemini-api/docs/rate-limits#free-tier */

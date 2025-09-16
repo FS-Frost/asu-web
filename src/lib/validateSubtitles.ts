@@ -1,14 +1,9 @@
 import { GoogleGenerativeAI, SchemaType, type GenerationConfig } from "@google/generative-ai";
 import * as asu from "@fs-frost/asu";
-import { trimEnd, trimSpacesAndEmptyLines, trimStart } from "./strings";
+import { trimEnd, trimSpacesAndEmptyLines } from "./strings";
 import { z } from "zod";
 import { DEFAULT_GEMINI_MAX_TOKENS, type GeminiModel, type Options } from "./gui/pages/dialogos/validarDialogosOptions";
-
-export const SUBTITLE_MODES = ["automático", "carteles", "diálogos", "karaokes"] as const;
-
-export const SubtitleMode = z.enum(SUBTITLE_MODES);
-
-export type SubtitleMode = z.infer<typeof SubtitleMode>;
+import type { SubtitleMode } from "./subtitleMode";
 
 export type SubtitleError = {
     location: string;

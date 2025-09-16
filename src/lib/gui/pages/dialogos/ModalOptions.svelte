@@ -1,13 +1,13 @@
 <script lang="ts">
     import Modal from "$lib/gui/Modal.svelte";
     import text from "$lib/text";
-    import { SUBTITLE_MODES } from "$lib/validateSubtitles";
     import Swal from "sweetalert2";
     import {
         GEMINI_MODELS,
         Options,
         saveOptions,
     } from "./validarDialogosOptions";
+    import { SUBTITLE_MODES } from "$lib/subtitleMode";
 
     type Props = {
         options: Options;

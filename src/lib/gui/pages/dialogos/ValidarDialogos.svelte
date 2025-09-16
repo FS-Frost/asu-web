@@ -3,7 +3,6 @@
     import text from "$lib/text";
     import {
         validateSubtitles,
-        type SubtitleMode,
         type SubtitleError,
         detectSubtitlesMode,
     } from "$lib/validateSubtitles";
@@ -15,6 +14,7 @@
     import { descargarSubsEjemplo } from "$lib/subs";
     import { downloadBlob } from "$lib/utils";
     import Promt from "./Promt.svelte";
+    import type { SubtitleMode } from "$lib/subtitleMode";
 
     const title: string = text.validarDialogos;
 
