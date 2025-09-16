@@ -1,10 +1,9 @@
 <script lang="ts">
     import NavItem from "./NavItem.svelte";
-    import { BuildInfo, generateBranchLink } from "$lib/buildInfo";
+    import { generateBranchLink } from "$lib/buildInfo";
     import text from "$lib/text";
     import { appState } from "$lib/state.svelte";
 
-    let buildInfo = $state<BuildInfo>(BuildInfo.parse({}));
     let navMenu = $state<HTMLElement>();
     let navToggle = $state<HTMLElement>();
 
@@ -127,15 +126,15 @@
             <NavItem text={text.acercaDe} page="acercaDe" />
         </div>
 
-        {#if buildInfo.sha != ""}
+        {#if appState.buildInfo.sha != ""}
             <div class="navbar-end">
                 <a
                     class="navbar-item"
                     title={text.verGitHub}
                     href={generateBranchLink(
-                        buildInfo.actor,
-                        buildInfo.repo,
-                        buildInfo.ref,
+                        appState.buildInfo.actor,
+                        appState.buildInfo.repo,
+                        appState.buildInfo.ref,
                     )}
                     target="_blank"
                 >
