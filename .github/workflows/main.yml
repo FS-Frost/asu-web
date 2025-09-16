@@ -20,9 +20,9 @@ jobs:
               run: |
                   bun install
 
-            # - name: Run tests
-            #   run: |
-            #       bun test
+            - name: Run tests
+              run: |
+                  bun test
 
             - name: Build
               run: |
