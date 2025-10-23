@@ -44,7 +44,7 @@ jobs:
                   echo "" > build/.nojekyll
 
             - name: Deploy
-              uses: JamesIves/github-pages-deploy-action@4.7.3
+              uses: JamesIves/github-pages-deploy-action@4.1.7
               with:
                   branch: gh-pages
                   folder: build
