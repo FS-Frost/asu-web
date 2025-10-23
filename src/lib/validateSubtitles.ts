@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, SchemaType, type GenerationConfig } from "@google/generative-ai";
+import { GoogleGenAI, Type, type GenerateContentConfig } from "@google/genai";
 import * as asu from "@fs-frost/asu";
 import { trimEnd, trimSpacesAndEmptyLines } from "./strings";
 import { z } from "zod";
@@ -414,8 +414,6 @@ export const SYSTEM_INSTRUCTION: string = `
 `;
 
 export async function validateSubtitleWithGemini(input: string, geminiModel: GeminiModel, geminiApiKey: string, maxTokens: number): Promise<GeminiValidation> {
-    let rawResponse = "";
-
     try {
         const storeResponseEnabled = false;
         if (storeResponseEnabled) {
@@ -426,56 +424,53 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Gem
             }
         }
 
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
 
-        const model = genAI.getGenerativeModel({
+        // https://ai.google.dev/gemini-api/docs/text-generation
+        const response = await genAI.models.generateContent({
             model: geminiModel,
-            systemInstruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
-        });
-
-        console.log(model.model);
-
-        // https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/content-generation-parameters
-        const generationConfig: GenerationConfig = {
-            temperature: 1,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: SchemaType.OBJECT,
-                required: ["errores"],
-                properties: {
-                    errores: {
-                        type: SchemaType.ARRAY,
-                        items: {
-                            type: SchemaType.OBJECT,
-                            required: ["numeroLinea", "mensajeError"],
-                            properties: {
-                                numeroLinea: {
-                                    type: SchemaType.INTEGER,
-                                    description: "número de la línea con error",
-                                },
-                                mensajeError: {
-                                    type: SchemaType.STRING,
-                                    description: "descripción del error y consejo de cómo corregirlo",
+            config: {
+                systemInstruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
+                temperature: 1,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
+                responseMimeType: "application/json",
+                thinkingConfig: {
+                    thinkingBudget: 0,
+                },
+                responseSchema: {
+                    type: Type.OBJECT,
+                    required: ["errores"],
+                    properties: {
+                        errores: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                required: ["numeroLinea", "mensajeError"],
+                                properties: {
+                                    numeroLinea: {
+                                        type: Type.INTEGER,
+                                        description: "número de la línea con error",
+                                    },
+                                    mensajeError: {
+                                        type: Type.STRING,
+                                        description: "descripción del error y consejo de cómo corregirlo",
+                                    },
                                 },
                             },
                         },
                     },
-                },
-            }
-        };
-
-        const chatSession = model.startChat({
-            generationConfig: generationConfig,
-            history: [],
+                }
+            },
+            contents: {
+                role: "user",
+                text: input,
+            },
         });
 
-        const result = await chatSession.sendMessage(input);
-        console.log({ result });
-        rawResponse = result.response.text();
-        const geminiValidation = GeminiValidation.parse(JSON.parse(rawResponse));
+        console.log({ response });
+        const geminiValidation = GeminiValidation.parse(JSON.parse(response?.text ?? ""));
 
         if (storeResponseEnabled) {
             localStorage.setItem("geminiValidation", JSON.stringify(geminiValidation));
@@ -484,10 +479,6 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Gem
         return geminiValidation;
     } catch (error) {
         console.error("error al validar subs con gemini", error);
-
-        if (rawResponse != "") {
-            console.log("rawResponse", rawResponse);
-        }
 
         let errorMessage = `${error}`;
         if (errorMessage.includes("API key not valid")) {
