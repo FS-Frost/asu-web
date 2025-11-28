@@ -248,7 +248,9 @@
 
             {#if options.geminiEnabled}
                 <span class="tag is-dark">
-                    {text.validateWithGemini}: {options.geminiModel}
+                    {text.validateWithGemini}:
+                    {options.geminiModel.displayName}
+                    ({options.geminiModel.version})
                 </span>
             {/if}
 

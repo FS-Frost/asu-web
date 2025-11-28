@@ -2,12 +2,10 @@
     import Modal from "$lib/gui/Modal.svelte";
     import text from "$lib/text";
     import Swal from "sweetalert2";
-    import {
-        GEMINI_MODELS,
-        Options,
-        saveOptions,
-    } from "./validarDialogosOptions";
+    import { Options, saveOptions } from "./validarDialogosOptions";
     import { SUBTITLE_MODES } from "$lib/subtitleMode";
+    import { getModels } from "$lib/gemini";
+    import { appState } from "$lib/state.svelte";
 
     type Props = {
         options: Options;
@@ -17,8 +15,11 @@
 
     let modal = $state<Modal>();
 
+    let apiKeyVisible = $state<boolean>(false);
+
     export function open(): void {
         modal?.open();
+        updateModels();
     }
 
     export function close(): void {
@@ -93,6 +94,18 @@
             confirmButtonText: "Volver",
         });
     }
+
+    async function updateModels(): Promise<void> {
+        if (appState.geminiModels.length > 0) {
+            return;
+        }
+
+        if (options.geminiApiKey == "") {
+            return;
+        }
+
+        appState.geminiModels = await getModels(options.geminiApiKey);
+    }
 </script>
 
 <Modal
@@ -126,8 +139,10 @@
             <label class="label" for="">Modelo</label>
             <div class="select is-fullwidth mb-2">
                 <select bind:value={options.geminiModel}>
-                    {#each GEMINI_MODELS as model}
-                        <option value={model}>{model}</option>
+                    {#each appState.geminiModels as model}
+                        <option value={model}>
+                            {model.displayName} ({model.version})
+                        </option>
                     {/each}
                 </select>
             </div>
@@ -135,14 +150,28 @@
             <div class="api-key boxed">
                 <div class="field">
                     <label class="label" for="">API KEY</label>
+
                     <div class="control">
                         <input
                             class="input"
-                            type="password"
+                            type={apiKeyVisible ? "text" : "password"}
                             bind:value={options.geminiApiKey}
                             placeholder="Ingresa tu API KEY"
                         />
                     </div>
+
+                    <button
+                        class="button is-small mt-2"
+                        onclick={() => {
+                            apiKeyVisible = !apiKeyVisible;
+
+                            setTimeout(() => {
+                                apiKeyVisible = false;
+                            }, 3_000);
+                        }}
+                    >
+                        {apiKeyVisible ? "Ocultar" : "Ver"} API KEY
+                    </button>
                 </div>
 
                 <p>
@@ -159,6 +188,13 @@
                     debido a su tendencia a tener falsos positivos.
                 </p>
             </div>
+
+            <button
+                class="button is-secondary is-fullwidth mt-2"
+                onclick={updateModels}
+            >
+                Validar API KEY
+            </button>
 
             <div class="field mt-1">
                 <label class="label" for="">Tokens máximos</label>

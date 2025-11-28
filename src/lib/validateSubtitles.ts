@@ -1,9 +1,10 @@
-import { GoogleGenAI, Type, type GenerateContentConfig } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import * as asu from "@fs-frost/asu";
 import { trimEnd, trimSpacesAndEmptyLines } from "./strings";
 import { z } from "zod";
-import { DEFAULT_GEMINI_MAX_TOKENS, type GeminiModel, type Options } from "./gui/pages/dialogos/validarDialogosOptions";
+import { DEFAULT_GEMINI_MAX_TOKENS, type Options } from "./gui/pages/dialogos/validarDialogosOptions";
 import type { SubtitleMode } from "./subtitleMode";
+import type { Model } from "./gemini";
 
 export type SubtitleError = {
     location: string;
@@ -207,7 +208,14 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
         geminiTargetModes.includes(subtitleMode)
     ) {
         console.log(validationResult.promt);
-        const result = await validateSubtitleWithGemini(validationResult.promt, options.geminiModel, options.geminiApiKey, options.geminiMaxTokens);
+
+        const result = await validateSubtitleWithGemini(
+            validationResult.promt,
+            options.geminiModel,
+            options.geminiApiKey,
+            options.geminiMaxTokens,
+        );
+
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
             if (line == null) {
@@ -413,7 +421,7 @@ export const SYSTEM_INSTRUCTION: string = `
     Frases vulgares, de uso poco común o muletillas están bien.
 `;
 
-export async function validateSubtitleWithGemini(input: string, geminiModel: GeminiModel, geminiApiKey: string, maxTokens: number): Promise<GeminiValidation> {
+export async function validateSubtitleWithGemini(input: string, geminiModel: Model, geminiApiKey: string, maxTokens: number): Promise<GeminiValidation> {
     try {
         const storeResponseEnabled = false;
         if (storeResponseEnabled) {
@@ -428,7 +436,7 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Gem
 
         // https://ai.google.dev/gemini-api/docs/text-generation
         const response = await genAI.models.generateContent({
-            model: geminiModel,
+            model: geminiModel.name,
             config: {
                 systemInstruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
                 temperature: 1,
