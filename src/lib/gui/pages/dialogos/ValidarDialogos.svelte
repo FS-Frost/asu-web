@@ -277,6 +277,12 @@
                     {text.validateTextPunctuation}
                 </span>
             {/if}
+
+            {#if options.geminiInteractionsAPIEnabled}
+                <span class="tag is-dark">
+                    {text.geminiInteractionsAPIEnabled}
+                </span>
+            {/if}
         </div>
     </div>
 

@@ -15,6 +15,7 @@ export const Options = z.object({
     validateTextEnd: z.boolean().default(true),
     validateTextSpaces: z.boolean().default(true),
     validateTextPunctuation: z.boolean().default(true),
+    geminiInteractionsAPIEnabled: z.boolean().default(false),
 });
 
 export type Options = z.infer<typeof Options>;

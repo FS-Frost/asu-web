@@ -406,8 +406,8 @@ export function detectSubtitlesMode(fileName: string, userSubsMode: SubtitleMode
 
 const GeminiValidation = z.object({
     errores: z.object({
-        numeroLinea: z.number().default(0),
-        mensajeError: z.string().default(""),
+        numeroLinea: z.number().default(0).describe("número de la línea con error"),
+        mensajeError: z.string().default("").describe("descripción del error y consejo de cómo corregirlo"),
     }).array(),
 });
 
@@ -479,6 +479,69 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Mod
 
         console.log({ response });
         const geminiValidation = GeminiValidation.parse(JSON.parse(response?.text ?? ""));
+
+        if (storeResponseEnabled) {
+            localStorage.setItem("geminiValidation", JSON.stringify(geminiValidation));
+        }
+
+        return geminiValidation;
+    } catch (error) {
+        console.error("error al validar subs con gemini", error);
+
+        let errorMessage = `${error}`;
+        if (errorMessage.includes("API key not valid")) {
+            errorMessage = "API KEY inválida.";
+        }
+
+        const geminiValidation: GeminiValidation = {
+            errores: [
+                {
+                    numeroLinea: 0,
+                    mensajeError: `Error al validar subtítulos con Google Gemini: ${errorMessage}`,
+                },
+            ],
+        };
+
+        return geminiValidation;
+    }
+}
+
+export async function validateSubtitleWithGemini_InteractionsAPI(input: string, geminiModel: Model, geminiApiKey: string, maxTokens: number): Promise<GeminiValidation> {
+    try {
+        const storeResponseEnabled = false;
+        if (storeResponseEnabled) {
+            const rawStoredResponse = localStorage.getItem("geminiValidation") ?? "{}";
+            if (rawStoredResponse !== "{}") {
+                const storedResponse = JSON.parse(localStorage.getItem("geminiValidation") ?? "{}");
+                return GeminiValidation.parse(storedResponse);
+            }
+        }
+
+        const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
+
+        // https://ai.google.dev/gemini-api/docs/interactions
+        const interaction = await genAI.interactions.create({
+            model: geminiModel.name,
+            input: input,
+            system_instruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
+            generation_config: {
+                max_output_tokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
+                top_p: 0.95,
+                temperature: 1,
+            },
+            response_format: z.toJSONSchema(GeminiValidation),
+        });
+
+        console.log({ interaction });
+
+        const outputs = interaction.outputs ?? [];
+        let responseText = "";
+
+        if (outputs.length > 0 && outputs[0].type == "text") {
+            responseText = outputs[0].text ?? "";
+        }
+
+        const geminiValidation = GeminiValidation.parse(JSON.parse(responseText));
 
         if (storeResponseEnabled) {
             localStorage.setItem("geminiValidation", JSON.stringify(geminiValidation));

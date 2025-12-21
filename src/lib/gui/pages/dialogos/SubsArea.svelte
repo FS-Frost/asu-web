@@ -13,7 +13,7 @@
 
     let { kind, text, rawMode, hiddeOptions = false }: Props = $props();
 
-    let visibleText = $state<string>(text);
+    let visibleText = $state<string>("");
     let rows = $state<number>(1);
     let textArea = $state<HTMLElement>();
 

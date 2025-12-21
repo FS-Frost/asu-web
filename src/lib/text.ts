@@ -21,4 +21,5 @@ export default {
     validateTextEnd: "Validar fin de los textos",
     validateTextSpaces: "Validar espacios múltiples",
     validateTextPunctuation: "Validar puntuación",
+    geminiInteractionsAPIEnabled: "Usar Interactions API",
 };

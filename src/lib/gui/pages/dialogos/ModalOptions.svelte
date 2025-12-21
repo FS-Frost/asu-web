@@ -136,6 +136,16 @@
         </label>
 
         {#if options.geminiEnabled}
+            <div class="field">
+                <label class="checkbox">
+                    <input
+                        type="checkbox"
+                        bind:checked={options.geminiInteractionsAPIEnabled}
+                    />
+                    {text.geminiInteractionsAPIEnabled}
+                </label>
+            </div>
+
             <label class="label" for="">Modelo</label>
             <div class="select is-fullwidth mb-2">
                 <select bind:value={options.geminiModel}>
