@@ -209,12 +209,25 @@ export async function validateSubtitles(subtitleMode: SubtitleMode, file: asu.AS
     ) {
         console.log(validationResult.promt);
 
-        const result = await validateSubtitleWithGemini(
-            validationResult.promt,
-            options.geminiModel,
-            options.geminiApiKey,
-            options.geminiMaxTokens,
-        );
+        let result: GeminiValidation;
+
+        if (options.geminiInteractionsAPIEnabled) {
+            console.log("geminiInteractionsAPIEnabled");
+
+            result = await validateSubtitleWithGemini_InteractionsAPI(
+                validationResult.promt,
+                options.geminiModel,
+                options.geminiApiKey,
+                options.geminiMaxTokens,
+            );
+        } else {
+            result = await validateSubtitleWithGemini(
+                validationResult.promt,
+                options.geminiModel,
+                options.geminiApiKey,
+                options.geminiMaxTokens,
+            );
+        }
 
         for (const lineResult of result.errores) {
             let line = file.events.lines[lineResult.numeroLinea - 1];
@@ -439,7 +452,7 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Mod
             model: geminiModel.name,
             config: {
                 systemInstruction: trimSpacesAndEmptyLines(SYSTEM_INSTRUCTION),
-                temperature: 1,
+                temperature: 0,
                 topP: 0.95,
                 topK: 40,
                 maxOutputTokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
@@ -527,7 +540,7 @@ export async function validateSubtitleWithGemini_InteractionsAPI(input: string, 
             generation_config: {
                 max_output_tokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
                 top_p: 0.95,
-                temperature: 1,
+                temperature: 0,
             },
             response_format: z.toJSONSchema(GeminiValidation),
         });
