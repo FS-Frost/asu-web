@@ -12,12 +12,18 @@
     let errorMessage = $state<string>("");
     let posEnabled = $state<boolean>(true);
     let frzEnabled = $state<boolean>(false);
+    let frxEnabled = $state<boolean>(false);
+    let fryEnabled = $state<boolean>(false);
 
     $effect(() => {
         processLines(rawBaseLines, rawTargetLines, reverseLinesEnabled);
     });
 
-    function processLines(rawBaseLines: string, rawTargetLines: string, reverseLinesEnabled: boolean): void {
+    function processLines(
+        rawBaseLines: string,
+        rawTargetLines: string,
+        reverseLinesEnabled: boolean,
+    ): void {
         errorMessage = "";
         rawResultLines = "";
 
@@ -72,7 +78,22 @@
             }
 
             const refPos = asu.findPos(targetItems);
-            const refFrz = asu.findFrz(targetItems) ?? { name: asu.TagName.frz, value: 0 };
+
+            const refFrz = asu.findFrz(targetItems) ?? {
+                name: asu.TagName.frz,
+                value: 0,
+            };
+
+            const refFrx = asu.findFrx(targetItems) ?? {
+                name: asu.TagName.frx,
+                value: 0,
+            };
+
+            const refFry = asu.findFry(targetItems) ?? {
+                name: asu.TagName.fry,
+                value: 0,
+            };
+
             const deltaMatrix = calculateDeltaMatrix(baseLines);
             const finalLines: asu.Line[] = [];
 
@@ -87,6 +108,18 @@
 
                 if (frzEnabled && refFrz && deltaFrz) {
                     applyDeltaFrz(refFrz, targetItems, deltaFrz);
+                }
+
+                const deltaFrx = deltaMatrix.frx[u];
+
+                if (frxEnabled && refFrx && deltaFrx) {
+                    applyDeltaFrx(refFrx, targetItems, deltaFrx);
+                }
+
+                const deltaFry = deltaMatrix.fry[u];
+
+                if (fryEnabled && refFry && deltaFry) {
+                    applyDeltaFry(refFry, targetItems, deltaFry);
                 }
 
                 targetLine.content = asu.contentsToString(targetItems);
@@ -123,16 +156,22 @@
     type DeltaMatrix = {
         pos: DeltaPos[];
         frz: DeltaRotation[];
+        frx: DeltaRotation[];
+        fry: DeltaRotation[];
     };
 
     function calculateDeltaMatrix(baseLines: asu.Line[]): DeltaMatrix {
         const matrix: DeltaMatrix = {
             pos: [],
             frz: [],
+            frx: [],
+            fry: [],
         };
 
         matrix.pos.push({ x: 0, y: 0 });
         matrix.frz.push({ value: 0 });
+        matrix.frx.push({ value: 0 });
+        matrix.fry.push({ value: 0 });
 
         for (let i = 0; i < baseLines.length - 1; i++) {
             const line1 = baseLines[i];
@@ -143,12 +182,18 @@
 
             calculateDeltaPos(matrix, itemsLine1, itemsLine2);
             calculateDeltaFrz(matrix, itemsLine1, itemsLine2);
+            calculateDeltaFrx(matrix, itemsLine1, itemsLine2);
+            calculateDeltaFry(matrix, itemsLine1, itemsLine2);
         }
 
         return matrix;
     }
 
-    function calculateDeltaPos(matrix: DeltaMatrix, items1: asu.ContentItem[], items2: asu.ContentItem[]): void {
+    function calculateDeltaPos(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
         const tagPos1 = asu.findPos(items1);
         if (tagPos1 == null) {
             return;
@@ -165,7 +210,11 @@
         matrix.pos.push({ x: deltaX, y: deltaY });
     }
 
-    function calculateDeltaFrz(matrix: DeltaMatrix, items1: asu.ContentItem[], items2: asu.ContentItem[]): void {
+    function calculateDeltaFrz(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
         const tagFrz1 = asu.findFrz(items1);
         if (tagFrz1 == null) {
             return;
@@ -180,7 +229,49 @@
         matrix.frz.push({ value: delta });
     }
 
-    function applyDeltaPos(ref: asu.TagPos, targetItems: asu.ContentItem[], delta: DeltaPos): void {
+    function calculateDeltaFrx(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
+        const tagFrx1 = asu.findFrx(items1);
+        if (tagFrx1 == null) {
+            return;
+        }
+
+        const tagFrx2 = asu.findFrx(items2);
+        if (tagFrx2 == null) {
+            return;
+        }
+
+        const delta = tagFrx2.value - tagFrx1.value;
+        matrix.frx.push({ value: delta });
+    }
+
+    function calculateDeltaFry(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
+        const tagFry1 = asu.findFry(items1);
+        if (tagFry1 == null) {
+            return;
+        }
+
+        const tagFry2 = asu.findFry(items2);
+        if (tagFry2 == null) {
+            return;
+        }
+
+        const delta = tagFry2.value - tagFry1.value;
+        matrix.fry.push({ value: delta });
+    }
+
+    function applyDeltaPos(
+        ref: asu.TagPos,
+        targetItems: asu.ContentItem[],
+        delta: DeltaPos,
+    ): void {
         const newX = ref.x + delta.x;
         const newY = ref.y + delta.y;
 
@@ -190,7 +281,11 @@
         asu.setPos(targetItems, newX, newY);
     }
 
-    function applyDeltaFrz(ref: asu.TagFrz, targetItems: asu.ContentItem[], delta: DeltaRotation): void {
+    function applyDeltaFrz(
+        ref: asu.TagFrz,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
         let newValue = ref.value + delta.value;
 
         if (newValue < 0) {
@@ -202,35 +297,78 @@
         asu.setFrz(targetItems, newValue);
     }
 
+    function applyDeltaFrx(
+        ref: asu.TagFrx,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
+        let newValue = ref.value + delta.value;
+
+        if (newValue < 0) {
+            newValue = 360 + newValue;
+        }
+
+        ref.value = newValue;
+
+        asu.setFrx(targetItems, newValue);
+    }
+
+    function applyDeltaFry(
+        ref: asu.TagFry,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
+        let newValue = ref.value + delta.value;
+
+        if (newValue < 0) {
+            newValue = 360 + newValue;
+        }
+
+        ref.value = newValue;
+
+        asu.setFry(targetItems, newValue);
+    }
+
     async function copyResult(): Promise<void> {
         await navigator.clipboard.writeText(rawResultLines);
         alert("¡Líneas copiadas al portapapeles!");
     }
 
     function showExample(): void {
-        rawBaseLines += "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.6,593.8)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.6,593.8)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.08,0:23:58.12,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.55,589.69)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.08,0:23:58.12,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.55,589.69)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.12,0:23:58.16,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.56,585.4)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.12,0:23:58.16,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.56,585.4)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.16,0:23:58.20,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.41,581.09)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.16,0:23:58.20,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.41,581.09)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.20,0:23:58.24,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.31,576.78)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.20,0:23:58.24,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.31,576.78)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.24,0:23:58.29,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.22,572.39)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.24,0:23:58.29,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.22,572.39)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.29,0:23:58.33,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.06,568.18)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.29,0:23:58.33,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.06,568.18)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.33,0:23:58.37,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.13,563.34)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.33,0:23:58.37,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(635.13,563.34)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.37,0:23:58.41,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.99,558.77)}Tama:\n";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.37,0:23:58.41,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.99,558.77)}Tama:\n";
 
-        rawBaseLines += "Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.96,554.13)}Tama:";
+        rawBaseLines +=
+            "Dialogue: 1,0:23:58.41,0:23:58.45,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(634.96,554.13)}Tama:";
 
         // Probar en dummy video de 1920x1080
         // Para probar secuencia normal
-        rawTargetLines = "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(1039.6,593.8)}LINEA";
+        rawTargetLines =
+            "Dialogue: 1,0:23:58.04,0:23:58.08,Cartel,,0,0,0,,{\\fax-0.1\\fs56\\an4\\1c&H1E2357&\\3c&HF4F4F4&\\bord0\\blur0.4\\frz354.6\\frx4\\fry354\\pos(1039.6,593.8)}LINEA";
 
         // Para probar secuencia inversa
         // rawTargetLines =
@@ -257,7 +395,11 @@
         <label class="label" for=""> Secuencia de posiciones </label>
 
         <div class="control">
-            <textarea bind:value={rawBaseLines} class="textarea" placeholder="Pega tus líneas aquí"></textarea>
+            <textarea
+                bind:value={rawBaseLines}
+                class="textarea"
+                placeholder="Pega tus líneas aquí"
+            ></textarea>
         </div>
     </div>
 
@@ -276,6 +418,16 @@
             <input type="checkbox" bind:checked={frzEnabled} />
             \frz
         </label>
+
+        <label class="checkbox reverse">
+            <input type="checkbox" bind:checked={frxEnabled} />
+            \frx
+        </label>
+
+        <label class="checkbox reverse">
+            <input type="checkbox" bind:checked={fryEnabled} />
+            \fry
+        </label>
     </div>
 
     <div class="field">
@@ -284,17 +436,29 @@
         </label>
 
         <div class="control">
-            <textarea bind:value={rawTargetLines} class="textarea" placeholder="Pega tus líneas aquí"></textarea>
+            <textarea
+                bind:value={rawTargetLines}
+                class="textarea"
+                placeholder="Pega tus líneas aquí"
+            ></textarea>
         </div>
     </div>
 
     <div class="field mt-2">
         <label class="label" for="">
             {text.resultado}
-            <i class="fa-solid fa-copy clickable" role="button" tabindex="0" title="Copiar" onclick={() => copyResult()} onkeydown={() => {}}></i>
+            <i
+                class="fa-solid fa-copy clickable"
+                role="button"
+                tabindex="0"
+                title="Copiar"
+                onclick={() => copyResult()}
+                onkeydown={() => {}}
+            ></i>
         </label>
         <div class="control">
-            <textarea bind:value={rawResultLines} class="textarea" readonly></textarea>
+            <textarea bind:value={rawResultLines} class="textarea" readonly
+            ></textarea>
         </div>
     </div>
 </section>
