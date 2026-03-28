@@ -14,6 +14,9 @@
     let frzEnabled = $state<boolean>(false);
     let frxEnabled = $state<boolean>(false);
     let fryEnabled = $state<boolean>(false);
+    let bordEnabled = $state<boolean>(false);
+    let shadEnabled = $state<boolean>(false);
+    let fsEnabled = $state<boolean>(false);
 
     $effect(() => {
         processLines(rawBaseLines, rawTargetLines, reverseLinesEnabled);
@@ -94,6 +97,21 @@
                 value: 0,
             };
 
+            const refBord = asu.findBord(targetItems) ?? {
+                name: asu.TagName.bord,
+                value: 0,
+            };
+
+            const refShad = asu.findShad(targetItems) ?? {
+                name: asu.TagName.shad,
+                value: 0,
+            };
+
+            const refFs = asu.findFs(targetItems) ?? {
+                name: asu.TagName.fs,
+                value: 0,
+            };
+
             const deltaMatrix = calculateDeltaMatrix(baseLines);
             const finalLines: asu.Line[] = [];
 
@@ -120,6 +138,24 @@
 
                 if (fryEnabled && refFry && deltaFry) {
                     applyDeltaFry(refFry, targetItems, deltaFry);
+                }
+
+                const deltaBord = deltaMatrix.bord[u];
+
+                if (bordEnabled && refBord && deltaBord) {
+                    applyDeltaBord(refBord, targetItems, deltaBord);
+                }
+
+                const deltaShad = deltaMatrix.shad[u];
+
+                if (shadEnabled && refShad && deltaShad) {
+                    applyDeltaShad(refShad, targetItems, deltaShad);
+                }
+
+                const deltaFs = deltaMatrix.fs[u];
+
+                if (fsEnabled && refFs && deltaFs) {
+                    applyDeltaFs(refFs, targetItems, deltaFs);
                 }
 
                 targetLine.content = asu.contentsToString(targetItems);
@@ -158,6 +194,9 @@
         frz: DeltaRotation[];
         frx: DeltaRotation[];
         fry: DeltaRotation[];
+        bord: DeltaRotation[];
+        shad: DeltaRotation[];
+        fs: DeltaRotation[];
     };
 
     function calculateDeltaMatrix(baseLines: asu.Line[]): DeltaMatrix {
@@ -166,12 +205,18 @@
             frz: [],
             frx: [],
             fry: [],
+            bord: [],
+            shad: [],
+            fs: [],
         };
 
         matrix.pos.push({ x: 0, y: 0 });
         matrix.frz.push({ value: 0 });
         matrix.frx.push({ value: 0 });
         matrix.fry.push({ value: 0 });
+        matrix.bord.push({ value: 0 });
+        matrix.shad.push({ value: 0 });
+        matrix.fs.push({ value: 0 });
 
         for (let i = 0; i < baseLines.length - 1; i++) {
             const line1 = baseLines[i];
@@ -184,6 +229,9 @@
             calculateDeltaFrz(matrix, itemsLine1, itemsLine2);
             calculateDeltaFrx(matrix, itemsLine1, itemsLine2);
             calculateDeltaFry(matrix, itemsLine1, itemsLine2);
+            calculateDeltaBord(matrix, itemsLine1, itemsLine2);
+            calculateDeltaShad(matrix, itemsLine1, itemsLine2);
+            calculateDeltaFs(matrix, itemsLine1, itemsLine2);
         }
 
         return matrix;
@@ -267,6 +315,63 @@
         matrix.fry.push({ value: delta });
     }
 
+    function calculateDeltaBord(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
+        const tag1 = asu.findBord(items1);
+        if (tag1 == null) {
+            return;
+        }
+
+        const tag2 = asu.findBord(items2);
+        if (tag2 == null) {
+            return;
+        }
+
+        const delta = tag2.value - tag1.value;
+        matrix.bord.push({ value: delta });
+    }
+
+    function calculateDeltaShad(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
+        const tag1 = asu.findShad(items1);
+        if (tag1 == null) {
+            return;
+        }
+
+        const tag2 = asu.findShad(items2);
+        if (tag2 == null) {
+            return;
+        }
+
+        const delta = tag2.value - tag1.value;
+        matrix.shad.push({ value: delta });
+    }
+
+    function calculateDeltaFs(
+        matrix: DeltaMatrix,
+        items1: asu.ContentItem[],
+        items2: asu.ContentItem[],
+    ): void {
+        const tag1 = asu.findFs(items1);
+        if (tag1 == null) {
+            return;
+        }
+
+        const tag2 = asu.findFs(items2);
+        if (tag2 == null) {
+            return;
+        }
+
+        const delta = tag2.value - tag1.value;
+        matrix.fs.push({ value: delta });
+    }
+
     function applyDeltaPos(
         ref: asu.TagPos,
         targetItems: asu.ContentItem[],
@@ -327,6 +432,36 @@
         ref.value = newValue;
 
         asu.setFry(targetItems, newValue);
+    }
+
+    function applyDeltaBord(
+        ref: asu.TagBord,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
+        const newValue = ref.value + delta.value;
+        ref.value = newValue;
+        asu.setBord(targetItems, newValue);
+    }
+
+    function applyDeltaShad(
+        ref: asu.TagShad,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
+        const newValue = ref.value + delta.value;
+        ref.value = newValue;
+        asu.setShad(targetItems, newValue);
+    }
+
+    function applyDeltaFs(
+        ref: asu.TagFs,
+        targetItems: asu.ContentItem[],
+        delta: DeltaRotation,
+    ): void {
+        const newValue = ref.value + delta.value;
+        ref.value = newValue;
+        asu.setFs(targetItems, newValue);
     }
 
     async function copyResult(): Promise<void> {
@@ -403,31 +538,52 @@
         </div>
     </div>
 
-    <div class="options">
-        <label class="checkbox reverse">
-            <input type="checkbox" bind:checked={reverseLinesEnabled} />
-            Aplicar inversamente
-        </label>
+    <label class="label" for=""> Configuración </label>
 
-        <label class="checkbox reverse">
-            <input type="checkbox" bind:checked={posEnabled} />
-            \pos
-        </label>
+    <div class="options-container">
+        <div class="option-group">
+            <div class="chips-grid">
+                <label class="chip" class:active={reverseLinesEnabled}>
+                    <input type="checkbox" bind:checked={reverseLinesEnabled} />
+                    <span>Inversamente</span>
+                </label>
 
-        <label class="checkbox reverse">
-            <input type="checkbox" bind:checked={frzEnabled} />
-            \frz
-        </label>
+                <label class="chip" class:active={bordEnabled}>
+                    <input type="checkbox" bind:checked={bordEnabled} />
+                    <span>\bord</span>
+                </label>
 
-        <label class="checkbox reverse">
-            <input type="checkbox" bind:checked={frxEnabled} />
-            \frx
-        </label>
+                <label class="chip" class:active={frxEnabled}>
+                    <input type="checkbox" bind:checked={frxEnabled} />
+                    <span>\frx</span>
+                </label>
 
-        <label class="checkbox reverse">
-            <input type="checkbox" bind:checked={fryEnabled} />
-            \fry
-        </label>
+                <label class="chip" class:active={fryEnabled}>
+                    <input type="checkbox" bind:checked={fryEnabled} />
+                    <span>\fry</span>
+                </label>
+
+                <label class="chip" class:active={frzEnabled}>
+                    <input type="checkbox" bind:checked={frzEnabled} />
+                    <span>\frz</span>
+                </label>
+
+                <label class="chip" class:active={fsEnabled}>
+                    <input type="checkbox" bind:checked={fsEnabled} />
+                    <span>\fs</span>
+                </label>
+
+                <label class="chip" class:active={posEnabled}>
+                    <input type="checkbox" bind:checked={posEnabled} />
+                    <span>\pos</span>
+                </label>
+
+                <label class="chip" class:active={shadEnabled}>
+                    <input type="checkbox" bind:checked={shadEnabled} />
+                    <span>\shad</span>
+                </label>
+            </div>
+        </div>
     </div>
 
     <div class="field">
@@ -466,5 +622,80 @@
 <style>
     section {
         width: 100%;
+    }
+
+    .options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 0.5rem;
+    }
+
+    .option-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .chips-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .chip {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.9rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .chip:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .chip.active {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .chip input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .clickable:hover {
+        color: #6366f1;
+        background: #f1f5f9;
+    }
+
+    .has-text-danger {
+        background: #fef2f2;
+        color: #dc2626;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #fee2e2;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 1rem 0;
     }
 </style>
