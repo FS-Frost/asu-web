@@ -26,6 +26,19 @@ export async function getModels(geminiApiKey: string): Promise<Model[]> {
                 continue;
             }
 
+
+            const name = model.name?.toLowerCase() ?? "";
+
+            if (!name.includes("gemini")) {
+                continue;
+            }
+
+            const keywords: string[] = ["flash", "pro"];
+
+            if (!keywords.some(key => name.includes(key))) {
+                continue;
+            }
+
             models.push({
                 name: model.name ?? "",
                 displayName: model.displayName ?? "",
@@ -44,6 +57,8 @@ export async function getModels(geminiApiKey: string): Promise<Model[]> {
     models.sort((a, b) => {
         return (a.name + a.version).localeCompare(b.name + b.version);
     });
+
+    console.log({ models });
 
     return models;
 }

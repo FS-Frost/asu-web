@@ -15,6 +15,8 @@
 
     let modal = $state<Modal>();
 
+    let modelSelect = $state<HTMLSelectElement>();
+
     let apiKeyVisible = $state<boolean>(false);
 
     export function open(): void {
@@ -95,8 +97,19 @@
         });
     }
 
+    function syncModel(): void {
+        const model = appState.geminiModels.find(
+            (model) => model.name === options.geminiModel.name,
+        );
+
+        if (model) {
+            options.geminiModel = model;
+        }
+    }
+
     async function updateModels(): Promise<void> {
         if (appState.geminiModels.length > 0) {
+            syncModel();
             return;
         }
 
@@ -105,6 +118,7 @@
         }
 
         appState.geminiModels = await getModels(options.geminiApiKey);
+        syncModel();
     }
 </script>
 
@@ -148,10 +162,13 @@
 
             <label class="label" for="">Modelo</label>
             <div class="select is-fullwidth mb-2">
-                <select bind:value={options.geminiModel}>
-                    {#each appState.geminiModels as model}
-                        <option value={model}>
-                            {model.displayName} ({model.version})
+                <select
+                    bind:this={modelSelect}
+                    bind:value={options.geminiModel}
+                >
+                    {#each appState.geminiModels as model (model.name)}
+                        <option value={model} label={model.name}>
+                            {model.displayName}
                         </option>
                     {/each}
                 </select>
@@ -201,7 +218,17 @@
 
             <button
                 class="button is-secondary is-fullwidth mt-2"
-                onclick={updateModels}
+                onclick={async () => {
+                    Swal.fire({
+                        title: "Validando API KEY",
+                        didOpen: () => Swal.showLoading,
+                        showConfirmButton: false,
+                    });
+
+                    await updateModels();
+
+                    Swal.close();
+                }}
             >
                 Validar API KEY
             </button>

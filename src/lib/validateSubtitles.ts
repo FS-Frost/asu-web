@@ -455,11 +455,8 @@ export async function validateSubtitleWithGemini(input: string, geminiModel: Mod
                 temperature: 0,
                 topP: 0.95,
                 topK: 40,
-                maxOutputTokens: maxTokens > 0 ? maxTokens : DEFAULT_GEMINI_MAX_TOKENS,
+                maxOutputTokens: maxTokens > 0 ? maxTokens : undefined,
                 responseMimeType: "application/json",
-                thinkingConfig: {
-                    thinkingBudget: 0,
-                },
                 responseSchema: {
                     type: Type.OBJECT,
                     required: ["errores"],
@@ -543,15 +540,18 @@ export async function validateSubtitleWithGemini_InteractionsAPI(input: string, 
                 temperature: 0,
             },
             response_format: z.toJSONSchema(GeminiValidation),
-        });
+        },
+            {
+                timeout: 300_000,
+            });
 
         console.log({ interaction });
 
         const outputs = interaction.outputs ?? [];
         let responseText = "";
 
-        if (outputs.length > 0 && outputs[0].type == "text") {
-            responseText = outputs[0].text ?? "";
+        if (outputs.length > 0 && outputs[1].type == "text") {
+            responseText = outputs[1].text ?? "";
         }
 
         const geminiValidation = GeminiValidation.parse(JSON.parse(responseText));
