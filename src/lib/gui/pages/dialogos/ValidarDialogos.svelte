@@ -93,14 +93,22 @@
 
                 const swalResult = await Swal.fire({
                     title: "Google Gemini habilitado. ¿Continuar?",
-                    confirmButtonText: "Continuar",
-                    cancelButtonText: "Continuar sin Google Gemini",
+                    confirmButtonText: "Con Gemini",
+                    denyButtonText: "Sin Gemini",
+                    cancelButtonText: "Cancelar",
+                    showDenyButton: true,
                     showCancelButton: true,
+                    confirmButtonColor: "#7066e0",
+                    denyButtonColor: "#d33",
+                    cancelButtonColor: "#6e7881",
+                    width: "35rem",
                     html: html,
                 });
 
-                if (!swalResult.isConfirmed) {
+                if (swalResult.isDenied) {
                     options.geminiEnabled = false;
+                } else if (!swalResult.isConfirmed) {
+                    return;
                 }
             }
 
