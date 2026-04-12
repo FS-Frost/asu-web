@@ -37,8 +37,41 @@
     let options = $state<Options>(Options.parse({}));
     let modalOptions = $state<ModalOptions>();
     let scrollingText = $state<string>("");
+    let isDragging = $state<boolean>(false);
+    let dragCounter = 0;
 
-    async function handleFiles(): Promise<void> {
+    function handleDragEnter(event: DragEvent): void {
+        event.preventDefault();
+        dragCounter++;
+        isDragging = true;
+    }
+
+    function handleDragOver(event: DragEvent): void {
+        event.preventDefault();
+    }
+
+    function handleDragLeave(): void {
+        dragCounter--;
+        if (dragCounter <= 0) {
+            isDragging = false;
+            dragCounter = 0;
+        }
+    }
+
+    async function handleDrop(event: DragEvent): Promise<void> {
+        event.preventDefault();
+        isDragging = false;
+        dragCounter = 0;
+
+        if (loading) return;
+
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            await handleFiles(Array.from(files));
+        }
+    }
+
+    async function handleFiles(filesToProcess?: File[]): Promise<void> {
         const geminiEnabled = options.geminiEnabled;
 
         try {
@@ -71,7 +104,7 @@
                 }
             }
 
-            const files = [...(inputFiles?.files ?? [])];
+            const files = filesToProcess ?? [...(inputFiles?.files ?? [])];
             totalErrors = 0;
             totalWarnings = 0;
             results = [];
@@ -230,7 +263,22 @@
     <title>{title}</title>
 </svelte:head>
 
-<section>
+<section
+    aria-label="Validador de Diálogos"
+    class:is-dragging={isDragging}
+    ondragenter={handleDragEnter}
+    ondragover={handleDragOver}
+    ondragleave={handleDragLeave}
+    ondrop={handleDrop}
+>
+    {#if isDragging}
+        <div class="drop-overlay">
+            <div class="drop-message">
+                <i class="fas fa-file-upload fa-3x mb-4"></i>
+                <p>Suelta los archivos aquí para procesarlos</p>
+            </div>
+        </div>
+    {/if}
     <h1>{title}</h1>
 
     <div class="options boxed mb-4">
@@ -300,7 +348,7 @@
                 type="file"
                 bind:this={inputFiles}
                 accept=".ass"
-                onchange={handleFiles}
+                onchange={() => handleFiles()}
                 multiple
                 disabled={loading}
             />
@@ -493,6 +541,51 @@
 <style>
     section {
         width: 100%;
+        position: relative;
+        min-height: 20rem;
+        transition: all 0.3s ease;
+    }
+
+    .drop-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(48, 63, 159, 0.15);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        border: 3px dashed #4a4a4a;
+        border-radius: 1rem;
+        pointer-events: none;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .drop-message {
+        text-align: center;
+        color: #4a4a4a;
+        font-size: 1.5rem;
+        font-weight: bold;
+        background: white;
+        padding: 3rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        transform: scale(1);
+        animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
 
     .result-info {
