@@ -1,35 +1,19 @@
 <script lang="ts">
-    import * as asu from "@fs-frost/asu";
     import text from "$lib/text";
-    import {
-        validateSubtitles,
-        type SubtitleError,
-        detectSubtitlesMode,
-    } from "$lib/validateSubtitles";
     import { loadOptions, Options } from "./validarDialogosOptions";
     import { onMount, tick } from "svelte";
-    import FileError from "./FileError.svelte";
     import ModalOptions from "./ModalOptions.svelte";
     import Swal from "sweetalert2";
     import { descargarSubsEjemplo } from "$lib/subs";
     import { downloadBlob } from "$lib/utils";
-    import Promt from "./Promt.svelte";
-    import type { SubtitleMode } from "$lib/subtitleMode";
+    import Uploader from "./Uploader.svelte";
+    import ProcessingOverlay from "./ProcessingOverlay.svelte";
+    import ResultSummary from "./ResultSummary.svelte";
+    import FileResultItem from "./FileResultItem.svelte";
+    import { processFiles, type FileResult } from "$lib/subtitleValidationService";
 
     const title: string = text.validarDialogos;
 
-    type FileResult = {
-        subsType: string;
-        fileName: string;
-        promt: string;
-        errors: SubtitleError[];
-        warnings: SubtitleError[];
-        errorsVisible: boolean;
-        warningsVisible: boolean;
-    };
-
-    let actualSubsMode = $state<SubtitleMode>("diálogos");
-    let inputFiles = $state<HTMLInputElement>();
     let totalErrors = $state<number>(0);
     let totalWarnings = $state<number>(0);
     let results = $state<FileResult[]>([]);
@@ -37,41 +21,8 @@
     let options = $state<Options>(Options.parse({}));
     let modalOptions = $state<ModalOptions>();
     let scrollingText = $state<string>("");
-    let isDragging = $state<boolean>(false);
-    let dragCounter = 0;
 
-    function handleDragEnter(event: DragEvent): void {
-        event.preventDefault();
-        dragCounter++;
-        isDragging = true;
-    }
-
-    function handleDragOver(event: DragEvent): void {
-        event.preventDefault();
-    }
-
-    function handleDragLeave(): void {
-        dragCounter--;
-        if (dragCounter <= 0) {
-            isDragging = false;
-            dragCounter = 0;
-        }
-    }
-
-    async function handleDrop(event: DragEvent): Promise<void> {
-        event.preventDefault();
-        isDragging = false;
-        dragCounter = 0;
-
-        if (loading) return;
-
-        const files = event.dataTransfer?.files;
-        if (files && files.length > 0) {
-            await handleFiles(Array.from(files));
-        }
-    }
-
-    async function handleFiles(filesToProcess?: File[]): Promise<void> {
+    async function handleFiles(files: File[]): Promise<void> {
         const geminiEnabled = options.geminiEnabled;
 
         try {
@@ -112,117 +63,31 @@
                 }
             }
 
-            const files = filesToProcess ?? [...(inputFiles?.files ?? [])];
+            loading = true;
+            results = [];
             totalErrors = 0;
             totalWarnings = 0;
-            results = [];
-            loading = true;
+            scrollingText = "";
 
-            for (const file of files) {
-                const content = await file.text();
-                const assFile = asu.parseASSFile(content);
-                if (assFile == null) {
-                    console.error("archivo inválido", file.name);
-                    continue;
-                }
+            const batchResult = await processFiles(files, options);
 
-                actualSubsMode = detectSubtitlesMode(
-                    file.name,
-                    options.userSubsMode,
-                );
+            totalErrors = batchResult.totalErrors;
+            totalWarnings = batchResult.totalWarnings;
+            results = batchResult.results;
+            scrollingText = batchResult.scrollingText;
 
-                const words: string[] = [];
-
-                for (const line of assFile.events.lines) {
-                    const items = asu.parseContent(line.content);
-
-                    let text = asu.contentsToString(
-                        items.filter((item) => item.name === "text"),
-                    );
-
-                    text = removeChars(text, [
-                        ",",
-                        ";",
-                        ".",
-                        "¡",
-                        "!",
-                        "¿",
-                        "?",
-                        "-",
-                        "\\N",
-                    ]);
-
-                    const lineWords = text.split(" ");
-                    words.push(...lineWords);
-                }
-
-                for (let i = 1; i <= 40; i++) {
-                    const wordIndex = randomInt(0, words.length - 1);
-                    const word = words[wordIndex];
-                    scrollingText += " " + word;
-                }
-
-                const validationResult = await validateSubtitles(
-                    actualSubsMode,
-                    assFile,
-                    options,
-                );
-
-                totalErrors += validationResult.errors.length;
-                totalWarnings += validationResult.warnings.length;
-
-                results.push({
-                    subsType: actualSubsMode,
-                    fileName: file.name,
-                    promt: validationResult.promt,
-                    errors: validationResult.errors,
-                    warnings: validationResult.warnings,
-                    errorsVisible: false,
-                    warningsVisible: false,
-                });
-            }
         } catch (error) {
             console.error("error al procesar archivos", error);
         } finally {
             options.geminiEnabled = geminiEnabled;
-            if (inputFiles != null) {
-                inputFiles.value = "";
-            }
-
             loading = false;
             await scrollToResults();
         }
     }
 
-    function removeChars(text: string, chars: string[]): string {
-        for (const char of chars) {
-            text = text.replaceAll(char, "");
-        }
-
-        return text;
-    }
-
-    function randomInt(min: number, max: number): number {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function generateResultColorClass(result: FileResult): string {
-        if (result.errors.length > 0) {
-            return "has-text-danger";
-        }
-
-        if (result.warnings.length > 0) {
-            return "has-text-warning";
-        }
-
-        return "has-text-success";
-    }
-
     async function scrollToResults(): Promise<void> {
         await tick();
-        const element = document.querySelector(".result-info");
+        const element = document.querySelector(".result-summary-anchor");
         if (element == null) {
             return;
         }
@@ -271,22 +136,7 @@
     <title>{title}</title>
 </svelte:head>
 
-<section
-    aria-label="Validador de Diálogos"
-    class:is-dragging={isDragging}
-    ondragenter={handleDragEnter}
-    ondragover={handleDragOver}
-    ondragleave={handleDragLeave}
-    ondrop={handleDrop}
->
-    {#if isDragging}
-        <div class="drop-overlay">
-            <div class="drop-message">
-                <i class="fas fa-file-upload fa-3x mb-4"></i>
-                <p>Suelta los archivos aquí para procesarlos</p>
-            </div>
-        </div>
-    {/if}
+<section aria-label="Validador de Diálogos">
     <h1>{title}</h1>
 
     <div class="options boxed mb-4">
@@ -310,35 +160,18 @@
                 </span>
             {/if}
 
-            {#if options.validateLineStyleExists}
-                <span class="tag is-dark">
-                    {text.validateLineStyleExists}
-                </span>
-            {/if}
-
-            {#if options.validateTextStart}
-                <span class="tag is-dark"> {text.validateTextStart} </span>
-            {/if}
-
-            {#if options.validateTextEnd}
-                <span class="tag is-dark"> {text.validateTextEnd} </span>
-            {/if}
-
-            {#if options.validateTextSpaces}
-                <span class="tag is-dark"> {text.validateTextSpaces} </span>
-            {/if}
-
-            {#if options.validateTextPunctuation}
-                <span class="tag is-dark">
-                    {text.validateTextPunctuation}
-                </span>
-            {/if}
-
-            {#if options.geminiInteractionsAPIEnabled}
-                <span class="tag is-dark">
-                    {text.geminiInteractionsAPIEnabled}
-                </span>
-            {/if}
+            {#each [
+                { cond: options.validateLineStyleExists, text: text.validateLineStyleExists },
+                { cond: options.validateTextStart, text: text.validateTextStart },
+                { cond: options.validateTextEnd, text: text.validateTextEnd },
+                { cond: options.validateTextSpaces, text: text.validateTextSpaces },
+                { cond: options.validateTextPunctuation, text: text.validateTextPunctuation },
+                { cond: options.geminiInteractionsAPIEnabled, text: text.geminiInteractionsAPIEnabled }
+            ] as item}
+                {#if item.cond}
+                    <span class="tag is-dark">{item.text}</span>
+                {/if}
+            {/each}
         </div>
     </div>
 
@@ -349,61 +182,15 @@
         Descargar subtítulos de ejemplo
     </button>
 
-    <div class="file is-fullwidth mb-2">
-        <label class="file-label">
-            <input
-                class="file-input"
-                type="file"
-                bind:this={inputFiles}
-                accept=".ass"
-                onchange={() => handleFiles()}
-                multiple
-                disabled={loading}
-            />
-            <span class="file-cta">
-                <span class="file-icon">
-                    <i class="fas fa-upload"></i>
-                </span>
-                <span class="file-label"> Cargar subtítulos </span>
-            </span>
-        </label>
-    </div>
+    <Uploader onFilesSelected={handleFiles} {loading} />
 
     {#if loading}
-        <div class="result-info">
-            <div class="counter">PROCESANDO</div>
-
-            <div
-                style="
-                    display: flex;
-                    position: relative;
-                    text-align: center;
-                    height: 16rem;
-                    overflow: hidden;
-                "
-            >
-                <p class="marquee">
-                    <span>{scrollingText}</span>
-                </p>
-                <p class="marquee marquee2">
-                    <span>{scrollingText}</span>
-                </p>
-
-                <div class="image-container" style="width: 100%;">
-                    <img
-                        class="result-image"
-                        src="img/nagato.gif"
-                        alt="Suzumiya Haruhi"
-                        title="Suzumiya Haruhi"
-                    />
-                </div>
-            </div>
-
-            <div class="counter">SUBTÍTULOS</div>
-        </div>
+        <div class="result-summary-anchor"></div>
+        <ProcessingOverlay {scrollingText} />
     {/if}
 
     {#if !loading && results.length > 0}
+        <div class="result-summary-anchor"></div>
         <button
             class="button is-secondary is-fullwidth mb-2"
             onclick={downloadResults}
@@ -411,135 +198,10 @@
             Descargar resultados
         </button>
 
-        <div class="result-info">
-            <div
-                class="counter {totalErrors == 0
-                    ? 'has-text-success'
-                    : 'has-text-danger'}"
-            >
-                ERRORES: {totalErrors}
-            </div>
+        <ResultSummary {totalErrors} {totalWarnings} />
 
-            <div class="image-container">
-                {#if totalErrors === 0 && totalWarnings === 0}
-                    <img
-                        class="result-image"
-                        src="img/lucky-star-yay.gif"
-                        alt="Lucky Star"
-                        title="Lucky Star"
-                    />
-                {:else if totalErrors > 10}
-                    <img
-                        class="result-image"
-                        src="img/nichijou.webp"
-                        alt="Nichijou"
-                        title="Nichijou"
-                    />
-                {:else if totalErrors > 0}
-                    <img
-                        class="result-image"
-                        src="img/under-arrest.gif"
-                        alt="You're Under Arrest"
-                        title="You're Under Arrest"
-                    />
-                {:else if totalWarnings > 0}
-                    <img
-                        class="result-image"
-                        src="img/new-game.gif"
-                        alt="New Game!"
-                        title="New Game!"
-                    />
-                {/if}
-            </div>
-
-            <div
-                class="counter {totalWarnings == 0
-                    ? 'has-text-success'
-                    : 'has-text-warning'}"
-            >
-                ADVERTENCIAS: {totalWarnings}
-            </div>
-        </div>
-
-        {#each results as result}
-            <div class="result">
-                <span
-                    class="name {generateResultColorClass(
-                        result,
-                    )} text-{result.subsType}"
-                >
-                    {result.fileName}
-                </span>
-
-                {#if result.errors.length == 0 && result.warnings.length == 0}
-                    <div class="has-text-success text-{result.subsType}">
-                        ¡Todo en orden! Detectado como {result.subsType}.
-
-                        {#if result.subsType === "carteles"}
-                            Ignorado.
-                        {/if}
-                    </div>
-                {:else}
-                    <div class={generateResultColorClass(result)}>
-                        Detectado como {result.subsType}.
-                    </div>
-                {/if}
-
-                {#if result.errors.length > 0}
-                    <div class="errors-list">
-                        <button
-                            class="button is-danger is-outlined"
-                            onclick={() =>
-                                (result.errorsVisible = !result.errorsVisible)}
-                        >
-                            {result.errorsVisible
-                                ? "Ocultar errores"
-                                : "Ver errores"}: {result.errors.length}
-                        </button>
-
-                        {#if result.errorsVisible}
-                            <div class="file-errors">
-                                {#each result.errors as error}
-                                    <FileError
-                                        kind="error"
-                                        subtitleError={error}
-                                    ></FileError>
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                {#if result.warnings.length > 0}
-                    <div class="warnings-list">
-                        <button
-                            class="button is-warning is-outlined"
-                            onclick={() =>
-                                (result.warningsVisible =
-                                    !result.warningsVisible)}
-                        >
-                            {result.warningsVisible
-                                ? "Ocultar advertencias"
-                                : "Ver advertencias"}: {result.warnings.length}
-                        </button>
-
-                        {#if result.warningsVisible}
-                            <div class="file-errors">
-                                {#each result.warnings as warning}
-                                    <FileError
-                                        kind="warning"
-                                        subtitleError={warning}
-                                    ></FileError>
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                {#if result.promt != ""}
-                    <Promt promt={result.promt}></Promt>
-                {/if}
-            </div>
+        {#each results as _, i}
+            <FileResultItem bind:result={results[i]} />
         {/each}
     {/if}
 </section>
@@ -551,133 +213,6 @@
         width: 100%;
         position: relative;
         min-height: 20rem;
-        transition: all 0.3s ease;
-    }
-
-    .drop-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(48, 63, 159, 0.15);
-        backdrop-filter: blur(8px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        border: 3px dashed #4a4a4a;
-        border-radius: 1rem;
-        pointer-events: none;
-        animation: fadeIn 0.2s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    .drop-message {
-        text-align: center;
-        color: #4a4a4a;
-        font-size: 1.5rem;
-        font-weight: bold;
-        background: white;
-        padding: 3rem;
-        border-radius: 1.5rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        transform: scale(1);
-        animation: pulse 1.5s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-
-    .result-info {
-        display: grid;
-        grid-template-columns: auto auto auto;
-    }
-
-    @media only screen and (max-width: 600px) {
-        .result-info {
-            grid-template-columns: unset;
-        }
-    }
-
-    .image-container {
-        display: flex;
-        justify-content: center;
-        vertical-align: middle;
-    }
-
-    .counters {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 10rem;
-    }
-
-    .counter {
-        font-size: xx-large;
-        font-weight: bold;
-        width: auto;
-        display: flex;
-        vertical-align: middle;
-        height: 100%;
-        justify-content: center;
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .file {
-        margin: 0;
-    }
-
-    .file-cta {
-        width: 100%;
-    }
-
-    .result-image {
-        height: 16rem;
-    }
-
-    .result {
-        margin-top: 0.5rem;
-        padding: 0.6rem;
-        border: 0.05rem #969696 solid;
-        border-radius: 0.5rem;
-    }
-
-    .name {
-        font-weight: bold;
-    }
-
-    .text-carteles {
-        color: darkgray;
-    }
-
-    .file-errors {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ignore-rule {
-        color: darkgray;
-    }
-
-    .errors-list,
-    .warnings-list {
-        margin-top: 0.5rem;
-    }
-
-    .errors-list,
-    .warnings-list {
-        button {
-            width: 15rem;
-        }
     }
 
     .options {
@@ -688,12 +223,17 @@
     .options-info {
         gap: 0.5rem;
         display: grid;
-        grid-template-columns: auto auto auto;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
     }
 
     .options-info span {
-        text-wrap: auto;
-        height: 3rem;
+        text-wrap: wrap;
+        height: auto;
+        min-height: 2.5rem;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
     }
 
@@ -709,32 +249,5 @@
 
     .btn-example {
         justify-content: left;
-    }
-
-    .marquee {
-        color: white;
-        margin: 0 auto;
-        white-space: nowrap;
-        overflow: hidden;
-        position: absolute;
-    }
-
-    .marquee span {
-        display: inline-block;
-        padding-left: 100%;
-        animation: marquee 5s linear infinite;
-    }
-
-    .marquee2 span {
-        animation-delay: 2.5s;
-    }
-
-    @keyframes marquee {
-        0% {
-            transform: translate(0, 0);
-        }
-        100% {
-            transform: translate(-100%, 0);
-        }
     }
 </style>

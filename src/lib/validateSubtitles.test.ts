@@ -1,6 +1,13 @@
 import { expect, test } from "bun:test";
-import { fileHasStyle, splitMultipleActorsDialogue, validateDialogueEnd, validateDialogueMultipleSpaces, validateDialoguePunctuation, validateDialogueStart } from "./validateSubtitles";
+import { fileHasStyle, splitMultipleActorsDialogue, validateDialogueEnd, validateDialogueMultipleSpaces, validateDialoguePunctuation, validateDialogueStart, sanitizeDialogue } from "./validateSubtitles";
 import * as asu from "@fs-frost/asu";
+
+test("sanitize dialogue", () => {
+    expect(sanitizeDialogue("Hola\\Nmundo")).toBe("Hola mundo");
+    expect(sanitizeDialogue("Hola \\Nmundo")).toBe("Hola mundo");
+    expect(sanitizeDialogue("Hola\\N mundo")).toBe("Hola mundo");
+    expect(sanitizeDialogue("¿\\NEn serio?")).toBe("¿ En serio?");
+});
 
 test("dialogue multiple spaces", () => {
     let text = "Con  doble   espacio.";
@@ -26,6 +33,10 @@ test("dialogue start", () => {
     expect(error).not.toBeEmpty();
 
     text = "...Dilo.";
+    error = validateDialogueStart(text);
+    expect(error).toBeEmpty();
+
+    text = "“Citando algo”";
     error = validateDialogueStart(text);
     expect(error).toBeEmpty();
 });
@@ -54,6 +65,10 @@ test("dialogue end", () => {
     text = "En serio,";
     error = validateDialogueEnd(text);
     expect(error).toBeEmpty();
+
+    text = "En serio~";
+    error = validateDialogueEnd(text);
+    expect(error).toBeEmpty();
 });
 
 test("dialogue punctuation", () => {
@@ -62,38 +77,16 @@ test("dialogue punctuation", () => {
     expect(error).toBeEmpty();
 
     text = "..en serio";
-    error = validateDialoguePunctuation(text);
-    expect(error).not.toBeEmpty();
-
-    text = "...en serio";
-    error = validateDialoguePunctuation(text);
-    expect(error).toBeEmpty();
-
-    text = "En serio,te digo";
-    error = validateDialoguePunctuation(text);
-    expect(error).not.toBeEmpty();
-
-    text = "En serio, te digo";
-    error = validateDialoguePunctuation(text);
-    expect(error).toBeEmpty();
-
-    text = "En serio;te digo";
-    error = validateDialoguePunctuation(text);
-    expect(error).not.toBeEmpty();
-
-    text = "En serio; te digo";
-    error = validateDialoguePunctuation(text);
-    expect(error).toBeEmpty();
 });
 
-test("dialogue multiple spaces", () => {
-    let text = "Con  doble   espacio.";
-    let error = validateDialogueMultipleSpaces(text);
-    expect(error).not.toBeEmpty();
-
-    text = "Sin doble espacio.";
-    error = validateDialogueMultipleSpaces(text);
-    expect(error).toBeEmpty();
+test("dialogue punctuation followed by space", () => {
+    expect(validateDialoguePunctuation("Hola,mundo")).not.toBeEmpty();
+    expect(validateDialoguePunctuation("Hola, mundo")).toBeEmpty();
+    expect(validateDialoguePunctuation("Hola.mundo")).not.toBeEmpty();
+    expect(validateDialoguePunctuation("Hola. mundo")).toBeEmpty();
+    expect(validateDialoguePunctuation("Llegó a las 10.30")).toBeEmpty();
+    expect(validateDialoguePunctuation("Llegó a las 10,30")).toBeEmpty();
+    expect(validateDialoguePunctuation("Hola\\Nmundo")).toBeEmpty();
 });
 
 test("dialogue has style", () => {

@@ -4,27 +4,14 @@
     import text from "$lib/text";
     import { appState } from "$lib/state.svelte";
 
-    let navMenu = $state<HTMLElement>();
-    let navToggle = $state<HTMLElement>();
+    let isMenuOpen = $state(false);
 
     function closeMenu(): void {
-        if (navToggle) {
-            navToggle.classList.remove("is-active");
-        }
-
-        if (navMenu) {
-            navMenu.classList.remove("is-active");
-        }
+        isMenuOpen = false;
     }
 
     function toggleMenu(): void {
-        if (navToggle) {
-            navToggle.classList.toggle("is-active");
-        }
-
-        if (navMenu) {
-            navMenu.classList.toggle("is-active");
-        }
+        isMenuOpen = !isMenuOpen;
     }
 
     $effect(() => {
@@ -33,25 +20,22 @@
 </script>
 
 <nav class="navbar">
-    <a
-        bind:this={navToggle}
+    <button
         onclick={() => toggleMenu()}
-        role="button"
-        tabindex="0"
-        class="navbar-burger"
+        class="navbar-burger {isMenuOpen ? 'is-active' : ''}"
         data-target="navMenu"
         aria-label="menu"
-        aria-expanded="false"
-        onkeydown={() => {}}
-        href={`javascript:;`}
+        aria-expanded={isMenuOpen}
+        type="button"
+        style="background: none; border: none; cursor: pointer;"
     >
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
-    </a>
+    </button>
 
-    <div bind:this={navMenu} class="navbar-menu" id="navMenu">
+    <div class="navbar-menu {isMenuOpen ? 'is-active' : ''}" id="navMenu">
         <div class="navbar-start">
             <NavItem text="Inicio" page="inicio" />
 
@@ -59,30 +43,15 @@
                 <div class="navbar-link">Carteles</div>
 
                 <div class="navbar-dropdown">
-                    <NavItem
-                        text={text.aplicarAlpha}
-                        page="carteles.aplicarAlpha"
-                    />
+                    <NavItem text={text.aplicarAlpha} page="carteles.aplicarAlpha" />
 
-                    <NavItem
-                        text={text.aplicarColor}
-                        page="carteles.aplicarColor"
-                    />
+                    <NavItem text={text.aplicarColor} page="carteles.aplicarColor" />
 
-                    <NavItem
-                        text={text.aplicarSecuenciaPosiciones}
-                        page="carteles.aplicarSecuenciaPosiciones"
-                    />
+                    <NavItem text={text.aplicarSecuenciaPosiciones} page="carteles.aplicarSecuenciaPosiciones" />
 
-                    <NavItem
-                        text={text.aplicarTraslacion}
-                        page="carteles.aplicarTraslacion"
-                    />
+                    <NavItem text={text.aplicarTraslacion} page="carteles.aplicarTraslacion" />
 
-                    <NavItem
-                        text={text.copiarMovimiento}
-                        page="carteles.copiarMovimiento"
-                    />
+                    <NavItem text={text.copiarMovimiento} page="carteles.copiarMovimiento" />
                 </div>
             </div>
 
@@ -90,15 +59,9 @@
                 <div class="navbar-link">Diálogos</div>
 
                 <div class="navbar-dropdown">
-                    <NavItem
-                        text={text.visualizarDialogos}
-                        page="dialogos.visualizarDialogos"
-                    />
+                    <NavItem text={text.visualizarDialogos} page="dialogos.visualizarDialogos" />
 
-                    <NavItem
-                        text={text.validarDialogos}
-                        page="dialogos.validarDialogos"
-                    />
+                    <NavItem text={text.validarDialogos} page="dialogos.validarDialogos" />
                 </div>
             </div>
 
@@ -106,20 +69,11 @@
                 <div class="navbar-link">Karaokes</div>
 
                 <div class="navbar-dropdown">
-                    <NavItem
-                        text={text.dividirKaraoke}
-                        page="karaokes.dividirKaraoke"
-                    />
+                    <NavItem text={text.dividirKaraoke} page="karaokes.dividirKaraoke" />
 
-                    <NavItem
-                        text={text.dividirSilabas}
-                        page="karaokes.dividirSilabas"
-                    />
+                    <NavItem text={text.dividirSilabas} page="karaokes.dividirSilabas" />
 
-                    <NavItem
-                        text={text.emparejarSilabas}
-                        page="karaokes.emparejarSilabas"
-                    />
+                    <NavItem text={text.emparejarSilabas} page="karaokes.emparejarSilabas" />
                 </div>
             </div>
 
@@ -128,16 +82,7 @@
 
         {#if appState.buildInfo.sha != ""}
             <div class="navbar-end">
-                <a
-                    class="navbar-item"
-                    title={text.verGitHub}
-                    href={generateBranchLink(
-                        appState.buildInfo.actor,
-                        appState.buildInfo.repo,
-                        appState.buildInfo.ref,
-                    )}
-                    target="_blank"
-                >
+                <a class="navbar-item" title={text.verGitHub} href={generateBranchLink(appState.buildInfo.actor, appState.buildInfo.repo, appState.buildInfo.ref)} target="_blank">
                     {text.verGitHub}
                 </a>
             </div>

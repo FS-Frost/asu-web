@@ -22,3 +22,9 @@
 >
     {text}
 </a>
+
+<style>
+    .navbar-item.is-active {
+        color: white;
+    }
+</style>

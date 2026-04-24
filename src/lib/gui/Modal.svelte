@@ -23,37 +23,25 @@
         onAccept,
     }: Props = $props();
 
-    const CLASS_IS_ACTIVE = "is-active";
-
-    let modal = $state<Element>();
+    let isOpen = $state(false);
 
     export function open() {
-        if (modal == null) {
-            return;
-        }
-
-        modal.classList.add(CLASS_IS_ACTIVE);
-
+        isOpen = true;
         if (onOpen != null) {
             onOpen();
         }
     }
 
     export function close() {
-        if (modal == null) {
-            return;
-        }
-
-        modal.classList.remove(CLASS_IS_ACTIVE);
-
+        isOpen = false;
         if (onClose != null) {
             onClose();
         }
     }
 </script>
 
-<div class="modal" bind:this={modal}>
-    <div class="modal-background"></div>
+<div class="modal {isOpen ? 'is-active' : ''}">
+    <div class="modal-background" onclick={() => close()} onkeydown={(e) => e.key === 'Escape' && close()} role="button" tabindex="-1"></div>
     <div class="modal-card">
         <header class="modal-card-head">
             <p class="modal-card-title">{title}</p>
